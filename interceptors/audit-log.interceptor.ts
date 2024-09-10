@@ -10,7 +10,7 @@ import type {Prisma} from '@prisma/client';
 import {getClientIp} from 'request-ip';
 import {Observable} from 'rxjs';
 import {tap} from 'rxjs/operators';
-import UAParser from 'ua-parser-js';
+import * as UAParser from 'ua-parser-js';
 import {AUDIT_LOG_DATA} from '../modules/audit-logs/audit-log.constants';
 import {UserRequest} from '../modules/auth/auth.interface';
 import {WebhooksService} from '../modules/webhooks/webhooks.service';

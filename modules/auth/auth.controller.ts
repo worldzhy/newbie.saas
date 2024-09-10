@@ -7,6 +7,7 @@ import {
   Ip,
   Post,
 } from '@nestjs/common';
+import {ApiTags, ApiBearerAuth, ApiResponse} from '@nestjs/swagger';
 import {User} from '@prisma/client';
 import {Expose} from '../../helpers/interfaces';
 import {
@@ -23,6 +24,7 @@ import {AuthService} from './auth.service';
 import {Public} from './public.decorator';
 import {RateLimit} from './rate-limit.decorator';
 
+@ApiTags('Auth')
 @Controller('auth')
 @Public()
 export class AuthController {

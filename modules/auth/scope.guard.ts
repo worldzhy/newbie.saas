@@ -1,6 +1,6 @@
 import {CanActivate, ExecutionContext, Injectable} from '@nestjs/common';
 import {Reflector} from '@nestjs/core';
-import minimatch from 'minimatch';
+import * as minimatch from 'minimatch';
 import {AccessTokenParsed, UserRequest} from './auth.interface';
 
 @Injectable()

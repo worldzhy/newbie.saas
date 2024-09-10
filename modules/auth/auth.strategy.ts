@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {PassportStrategy} from '@nestjs/passport';
 import {Request} from 'express';
 import ipRangeCheck from 'ip-range-check';
-import minimatch from 'minimatch';
+import * as minimatch from 'minimatch';
 import {getClientIp} from 'request-ip';
 import {ApiKeysService} from '../api-keys/api-keys.service';
 import {LOGIN_ACCESS_TOKEN} from '../../providers/tokens/tokens.constants';

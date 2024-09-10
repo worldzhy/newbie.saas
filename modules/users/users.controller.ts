@@ -13,6 +13,7 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
+import {ApiTags, ApiBearerAuth, ApiResponse} from '@nestjs/swagger';
 import {FilesInterceptor} from '@nestjs/platform-express';
 import {Prisma, User} from '@prisma/client';
 import {Files} from '../../helpers/interfaces';
@@ -27,6 +28,7 @@ import {Scopes} from '../auth/scope.decorator';
 import {UpdateUserDto} from './users.dto';
 import {UsersService} from './users.service';
 
+@ApiTags('Users')
 @Controller('users')
 export class UserController {
   constructor(private usersService: UsersService) {}

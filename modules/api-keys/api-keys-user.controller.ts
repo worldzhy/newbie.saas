@@ -11,6 +11,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
+import {ApiTags, ApiBearerAuth, ApiResponse} from '@nestjs/swagger';
 import {ApiKey, Prisma} from '@prisma/client';
 import {CursorPipe} from '@framework/pipes/cursor.pipe';
 import {OptionalIntPipe} from '@framework/pipes/optional-int.pipe';
@@ -25,6 +26,7 @@ import {
 } from './api-keys.dto';
 import {ApiKeysService} from './api-keys.service';
 
+@ApiTags('Users Api-keys')
 @Controller('users/:userId/api-keys')
 export class ApiKeyUserController {
   constructor(private apiKeysService: ApiKeysService) {}

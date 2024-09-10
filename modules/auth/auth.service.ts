@@ -17,7 +17,7 @@ import {createRandomBytes, createDigest} from '@otplib/plugin-crypto';
 import {keyEncoder, keyDecoder} from '@otplib/plugin-thirty-two';
 import qrcode from 'qrcode';
 import * as randomColor from 'randomcolor';
-import UAParser from 'ua-parser-js';
+import * as UAParser from 'ua-parser-js';
 import {
   COMPROMISED_PASSWORD,
   EMAIL_USER_CONFLICT,
@@ -609,15 +609,15 @@ export class AuthService {
   ): Promise<TokenResponse> {
     const token = await generateRandomString(64);
     const ua = new UAParser(userAgent);
-    const location = await this.geolocationService.getLocation(ipAddress);
+    // const location = await this.geolocationService.getLocation(ipAddress);
     const {id} = await this.prisma.session.create({
       data: {
         token,
         ipAddress,
-        city: location?.city?.names?.en,
-        region: location?.subdivisions?.pop()?.names?.en,
-        timezone: location?.location?.time_zone,
-        countryCode: location?.country?.iso_code,
+        // city: location?.city?.names?.en,
+        // region: location?.subdivisions?.pop()?.names?.en,
+        // timezone: location?.location?.time_zone,
+        // countryCode: location?.country?.iso_code,
         userAgent,
         browser:
           `${ua.getBrowser().name ?? ''} ${

@@ -8,6 +8,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import {ApiTags, ApiBearerAuth, ApiResponse} from '@nestjs/swagger';
 import {Membership, Prisma} from '@prisma/client';
 import {CursorPipe} from '@framework/pipes/cursor.pipe';
 import {OptionalIntPipe} from '@framework/pipes/optional-int.pipe';
@@ -18,6 +19,7 @@ import {Scopes} from '../auth/scope.decorator';
 import {CreateGroupDto} from '../groups/groups.dto';
 import {MembershipsService} from './memberships.service';
 
+@ApiTags('Users Memberships')
 @Controller('users/:userId/memberships')
 export class UserMembershipController {
   constructor(private membershipsService: MembershipsService) {}
