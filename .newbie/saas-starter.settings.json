@@ -1,6 +1,8 @@
 {
   "config-service": {
     "saas-starter": {
+      "clientHost": "process.env.HOST_CLIENT ?? 'http://localhost:3001'",
+      "serverHost": "process.env.HOST_SERVER ?? 'http://localhost:3000'",
       "app": {
         "name": "process.env.APP_NAME ?? 'SaaS Starter'",
         "frontendUrl": "process.env.APP_FRONTEND_URL ?? 'http://localhost:3000'"
@@ -43,6 +45,10 @@
       },
       "googleMaps": {
         "apiKey": "process.env.GOOGLE_MAPS_API_KEY"
+      },
+      "googleAuth": {
+        "clientId": "process.env.GOOGLE_CLIENT_ID",
+        "clientSecret": "process.env.GOOGLE_CLIENT_SECRET"
       },
       "gravatar": {
         "enabled": "bool(process.env.GRAVATAR_ENABLED, true)"
@@ -103,6 +109,8 @@
     }
   },
   "env": {
+    "HOST_SERVER": "",
+    "HOST_CLIENT": "",
     "APP_NAME": "",
     "APP_FRONTEND_URL": "",
     "CACHE_GEOLOCATION_LRU_SIZE": "",
@@ -161,6 +169,8 @@
     "TWILIO_FAIL_RETRIES": "",
     "TWILIO_ACCOUNT_SID": "",
     "TWILIO_AUTH_TOKEN": "",
+    "GOOGLE_CLIENT_ID": "",
+    "GOOGLE_CLIENT_SECRET": "",
     "WEBHOOK_FAIL_RETRIES": ""
   },
   "dependencies": {
@@ -193,7 +203,8 @@
     "request-ip": "latest",
     "stripe": "latest",
     "twilio": "latest",
-    "ua-parser-js": "latest"
+    "ua-parser-js": "latest",
+    "passport-google-oauth20": "^2.0.0"
   },
   "assets": [
     "microservices/saas-starter/providers/mail/templates/"

@@ -12,7 +12,8 @@ import {ApprovedSubnetsModule} from '../approved-subnets/approved-subnets.module
 import {ApprovedSubnetsService} from '../approved-subnets/approved-subnets.service';
 import {AuthController} from './auth.controller';
 import {AuthService} from './auth.service';
-import {SaaSStarterStrategy} from './auth.strategy';
+import {SaaSStarterStrategy} from './strategies/auth.strategy';
+import {GoogleStrategy} from './strategies/google.strategy';
 
 @Module({
   imports: [
@@ -28,6 +29,11 @@ import {SaaSStarterStrategy} from './auth.strategy';
   ],
   controllers: [AuthController],
   exports: [AuthService],
-  providers: [AuthService, SaaSStarterStrategy, ApprovedSubnetsService],
+  providers: [
+    AuthService,
+    SaaSStarterStrategy,
+    GoogleStrategy,
+    ApprovedSubnetsService,
+  ],
 })
 export class AuthModule {}

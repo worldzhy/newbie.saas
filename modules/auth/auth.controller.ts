@@ -6,8 +6,20 @@ import {
   HttpStatus,
   Ip,
   Post,
+  Get,
+  Req,
+  Res,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiResponse} from '@nestjs/swagger';
+import {ConfigService} from '@nestjs/config';
+import * as queryString from 'query-string';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiResponse,
+  ApiOperation,
+} from '@nestjs/swagger';
 import {User} from '@prisma/client';
 import {Expose} from '../../helpers/interfaces';
 import {
@@ -23,12 +35,16 @@ import {TokenResponse, TotpTokenResponse} from './auth.interface';
 import {AuthService} from './auth.service';
 import {Public} from './public.decorator';
 import {RateLimit} from './rate-limit.decorator';
+import {GoogleAuthGuard} from './guards/google-auth.guard';
 
 @ApiTags('Auth')
 @Controller('auth')
 @Public()
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private configService: ConfigService
+  ) {}
 
   /** Login to an account */
   @Post('login')
@@ -39,14 +55,14 @@ export class AuthController {
     @Headers('User-Agent') userAgent: string,
     @Body('origin') origin?: string
   ): Promise<TokenResponse | TotpTokenResponse> {
-    return this.authService.login(
-      ip,
+    return this.authService.login({
+      ipAddress: ip,
       userAgent,
-      data.email,
-      data.password,
-      data.code,
-      origin
-    );
+      email: data.email,
+      password: data.password,
+      code: data.code,
+      origin,
+    });
   }
 
   /** Create a new account */
@@ -58,6 +74,39 @@ export class AuthController {
     @Body() data: RegisterDto
   ): Promise<Expose<User>> {
     return await this.authService.register(ip, data);
+  }
+
+  @ApiOperation({
+    summary: 'google auth page, will redirect to google login',
+  })
+  @UseGuards(GoogleAuthGuard)
+  @Get('google')
+  async handleGoogleAuth() {}
+
+  @ApiOperation({
+    summary: 'google auth callback url, will redirect to front-end login page',
+  })
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/callback')
+  async handleGoogleAuthCallback(
+    @Req() req,
+    @Res() res,
+    @Ip() ip: string,
+    @Headers('User-Agent') userAgent: string
+  ) {
+    const email = req.user.emails[0].email;
+    const token = await this.authService.login({
+      ipAddress: ip,
+      userAgent,
+      email,
+      googleLogin: true,
+    });
+    const frontEndHost = this.configService.get(
+      'microservices.saas-starter.clientHost'
+    );
+    const redirect = `${frontEndHost}/auth/login?${queryString.stringify({...token})}`
+    // console.log(redirect);
+    res.redirect(redirect);
   }
 
   /** Get a new access token using a refresh token */

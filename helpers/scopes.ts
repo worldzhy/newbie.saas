@@ -105,3 +105,9 @@ export const groupMemberScopes = {
   'group-{groupId}:read-subscription-*': 'Read subscriptions',
   'group-{groupId}:read-webhook-*': 'Read webhooks',
 };
+
+
+/** Scopes for a application */
+export const applicationScopes = {
+  'application-{userId}:message-bot-api-key-*': 'Message Bot',
+};

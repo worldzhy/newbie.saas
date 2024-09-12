@@ -22,6 +22,7 @@ model User {
     createdAt            DateTime             @default(now())
     gender               Gender               @default(UNKNOWN)
     id                   Int                  @id
+    googleId             String?
     name                 String
     notificationEmail    NotificationEmail    @default(ACCOUNT)
     password             String?

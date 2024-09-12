@@ -15,8 +15,9 @@ import {ApiKeysModule} from './modules/api-keys/api-keys.module';
 import {ApprovedSubnetsModule} from './modules/approved-subnets/approved-subnets.module';
 import {AuditLogsModule} from './modules/audit-logs/audit-logs.module';
 import {AuthModule} from './modules/auth/auth.module';
-import {ScopesGuard} from './modules/auth/scope.guard';
-import {SaaSStarterAuthGuard} from './modules/auth/auth.guard';
+import {ScopesGuard} from './modules/auth/guards/scope.guard';
+import {SaaSStarterAuthGuard} from './modules/auth/guards/auth.guard';
+import {GoogleAuthGuard} from './modules/auth/guards/google-auth.guard';
 import {DomainsModule} from './modules/domains/domains.module';
 import {EmailsModule} from './modules/emails/emails.module';
 import {GroupsModule} from './modules/groups/groups.module';
@@ -61,6 +62,7 @@ import {MetricsModule} from './modules/metrics/metrics.module';
     MetricsModule,
   ],
   providers: [
+    GoogleAuthGuard,
     {provide: APP_INTERCEPTOR, useClass: RateLimitInterceptor},
     {provide: APP_GUARD, useClass: SaaSStarterAuthGuard},
     {provide: APP_GUARD, useClass: ScopesGuard},

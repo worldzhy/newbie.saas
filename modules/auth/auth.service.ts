@@ -100,14 +100,23 @@ export class AuthService {
     });
   }
 
-  async login(
-    ipAddress: string,
-    userAgent: string,
-    email: string,
-    password?: string,
-    code?: string,
-    origin?: string
-  ): Promise<TokenResponse | TotpTokenResponse> {
+  async login({
+    ipAddress,
+    userAgent,
+    email,
+    password,
+    code,
+    origin,
+    googleLogin,
+  }: {
+    ipAddress: string;
+    userAgent: string;
+    email: string;
+    password?: string;
+    code?: string;
+    origin?: string;
+    googleLogin?: boolean;
+  }): Promise<TokenResponse | TotpTokenResponse> {
     const emailSafe = safeEmail(email);
     const user = await this.prisma.user.findFirstOrThrow({
       where: {emails: {some: {emailSafe}}},
@@ -124,9 +133,9 @@ export class AuthService {
       });
     if (!user.emails.find(i => i.emailSafe === emailSafe)?.isVerified)
       throw new UnauthorizedException(UNVERIFIED_EMAIL);
-    if (!password || !user.password) return this.mfaResponse(user, 'EMAIL');
+    // if (!password || !user.password) return this.mfaResponse(user, 'EMAIL');
     if (!user.prefersEmail) throw new BadRequestException(NO_EMAILS);
-    if (!(await compare(password, user.password)))
+    if (!googleLogin && !(await compare(password, user.password)))
       throw new UnauthorizedException(INVALID_CREDENTIALS);
     if (code)
       return this.loginUserWithTotpCode(
@@ -257,6 +266,81 @@ export class AuthService {
     } else await this.sendEmailVerification(email, false, origin);
     await this.approvedSubnetsService.approveNewSubnet(user.id, ipAddress);
     return expose(user);
+  }
+
+  async findOrCreateAccountByGoogleAuth({
+    googleId,
+    firstName,
+    lastName,
+    email,
+    avatar,
+  }: {
+    googleId: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    avatar: string;
+  }): Promise<User> {
+    if (!googleId) {
+      throw new BadRequestException('missing googleId');
+    }
+    const userMatchedWithGoogleId =
+      await this.prisma.user.findFirst({
+        where: {
+          googleId,
+        },
+        include: {emails: true},
+      });
+    if (userMatchedWithGoogleId) {
+      return userMatchedWithGoogleId;
+    }
+
+    const userMatchedWithEmail = await this.prisma.email.findFirst({
+      where: {
+        email,
+      },
+    });
+    if (userMatchedWithEmail) {
+      await this.prisma.user.update({
+        where: {id: userMatchedWithEmail.userId},
+        data: {
+          googleId,
+        },
+      });
+      return await this.prisma.user.findFirstOrThrow({
+        where: {
+          googleId,
+        },
+        include: {emails: true},
+      });
+    }
+
+    // register new user
+    let id: number | undefined = undefined;
+    while (!id) {
+      id = Number(`10${await generateRandomString(6, 'numeric')}`);
+      const users = await this.prisma.user.findMany({where: {id}, take: 1});
+      if (users.length) id = undefined;
+    }
+    const user = await this.prisma.user.create({
+      data: {
+        id,
+        name: email,
+        googleId,
+        profilePictureUrl: avatar,
+        emails: {
+          create: {email: email, emailSafe: email, isVerified: true},
+        },
+      },
+      include: {emails: {select: {id: true}}},
+    });
+    if (user.emails[0]?.id)
+      await this.prisma.user.update({
+        where: {id: user.id},
+        data: {prefersEmail: {connect: {id: user.emails[0].id}}},
+      });
+
+    return user;
   }
 
   async sendEmailVerification(email: string, resend = false, origin?: string) {

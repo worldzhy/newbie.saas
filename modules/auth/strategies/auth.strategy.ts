@@ -4,10 +4,10 @@ import {Request} from 'express';
 import ipRangeCheck from 'ip-range-check';
 import * as minimatch from 'minimatch';
 import {getClientIp} from 'request-ip';
-import {ApiKeysService} from '../api-keys/api-keys.service';
-import {LOGIN_ACCESS_TOKEN} from '../../providers/tokens/tokens.constants';
-import {TokensService} from '../../providers/tokens/tokens.service';
-import {AccessTokenClaims, AccessTokenParsed} from './auth.interface';
+import {ApiKeysService} from '../../api-keys/api-keys.service';
+import {LOGIN_ACCESS_TOKEN} from '../../../providers/tokens/tokens.constants';
+import {TokensService} from '../../../providers/tokens/tokens.service';
+import {AccessTokenClaims, AccessTokenParsed} from '../auth.interface';
 const Strategy = require('passport-strategy');
 
 class SaaSStarterStrategyName extends Strategy {
