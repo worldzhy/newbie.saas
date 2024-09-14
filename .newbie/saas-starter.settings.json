@@ -1,7 +1,7 @@
 {
   "config-service": {
     "saas-starter": {
-      "clientHost": "process.env.HOST_CLIENT ?? 'http://localhost:3001'",
+      "clientLoginUrl": "process.env.HOST_CLIENT_LOGIN_URL ?? 'http://localhost:3001/account/login'",
       "serverHost": "process.env.HOST_SERVER ?? 'http://localhost:3000'",
       "app": {
         "name": "process.env.APP_NAME ?? 'SaaS Starter'",
@@ -110,7 +110,7 @@
   },
   "env": {
     "HOST_SERVER": "",
-    "HOST_CLIENT": "",
+    "HOST_CLIENT_LOGIN_URL": "",
     "APP_NAME": "",
     "APP_FRONTEND_URL": "",
     "CACHE_GEOLOCATION_LRU_SIZE": "",
