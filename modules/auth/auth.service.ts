@@ -332,7 +332,7 @@ export class AuthService {
           create: {email: email, emailSafe: email, isVerified: true},
         },
       },
-      include: {emails: {select: {id: true}}},
+      include: {emails: true},
     });
     if (user.emails[0]?.id)
       await this.prisma.user.update({
