@@ -23,7 +23,9 @@ export interface TotpTokenResponse {
 }
 
 export interface AccessTokenParsed {
+  /** 'userId' or 'apiKeyId depends on the type */
   id: number;
+  userId: number;
   scopes: string[];
   type: 'user' | 'api-key';
   sessionId?: number;

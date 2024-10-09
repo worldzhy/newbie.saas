@@ -75,6 +75,7 @@ export class SaaSStarterStrategy extends PassportStrategy(
           return this.safeSuccess({
             type: 'api-key',
             id: apiKeyDetails.id,
+            userId: apiKeyDetails.userId as number,
             scopes: apiKeyDetails.scopes as string[],
           });
         } catch (error) {}
@@ -92,7 +93,14 @@ export class SaaSStarterStrategy extends PassportStrategy(
         bearerToken
       ) as AccessTokenClaims;
       const {id, scopes, sessionId, role} = payload;
-      return this.safeSuccess({type: 'user', id, scopes, sessionId, role});
+      return this.safeSuccess({
+        type: 'user',
+        id,
+        userId: id,
+        scopes,
+        sessionId,
+        role,
+      });
     } catch (error) {}
 
     return this.fail('Invalid token', 401);
