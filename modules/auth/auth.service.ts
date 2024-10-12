@@ -66,6 +66,7 @@ import {
   groupMemberScopes,
   groupOwnerScopes,
   userScopes,
+  applicationScopes
 } from '../../helpers/scopes';
 import axios from 'axios';
 import {generateRandomString} from '@framework/utilities/random.util';
@@ -867,7 +868,10 @@ export class AuthService {
     if (user.role === 'SUDO') return ['*'];
 
     // Add all scopes for user self
-    const scopes: string[] = Object.keys(userScopes).map(scope =>
+    const scopes: string[] = Object.keys({
+      ...userScopes,
+      ...applicationScopes,// add application scopes 
+    }).map(scope =>
       scope.replace('{userId}', user.id.toString())
     );
 
