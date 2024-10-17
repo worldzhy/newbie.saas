@@ -9,7 +9,6 @@ import {ScheduleModule} from '@nestjs/schedule';
 import {AuditLogger} from './interceptors/audit-log.interceptor';
 import {RateLimitInterceptor} from './interceptors/rate-limit.interceptor';
 import {ApiLoggerMiddleware} from './middlewares/api-logger.middleware';
-import {JsonBodyMiddleware} from './middlewares/json-body.middleware';
 import {RawBodyMiddleware} from './middlewares/raw-body.middleware';
 import {ApiKeysModule} from './modules/api-keys/api-keys.module';
 import {ApprovedSubnetsModule} from './modules/approved-subnets/approved-subnets.module';
@@ -77,8 +76,6 @@ export class SaaSStarterModule implements NestModule {
         path: '/webhooks/stripe',
         method: RequestMethod.POST,
       })
-      .apply(JsonBodyMiddleware)
-      .forRoutes('*')
       .apply(ApiLoggerMiddleware)
       .forRoutes('*');
   }
