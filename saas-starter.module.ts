@@ -1,9 +1,8 @@
-import {MiddlewareConsumer, Module, NestModule} from '@nestjs/common';
+import {Module} from '@nestjs/common';
 import {APP_GUARD, APP_INTERCEPTOR} from '@nestjs/core';
 import {ScheduleModule} from '@nestjs/schedule';
 import {AuditLogger} from './interceptors/audit-log.interceptor';
 import {RateLimitInterceptor} from './interceptors/rate-limit.interceptor';
-import {ApiLoggerMiddleware} from './middlewares/api-logger.middleware';
 import {ApiKeysModule} from './modules/api-keys/api-keys.module';
 import {ApprovedSubnetsModule} from './modules/approved-subnets/approved-subnets.module';
 import {AuditLogsModule} from './modules/audit-logs/audit-logs.module';
@@ -62,8 +61,4 @@ import {MetricsModule} from './modules/metrics/metrics.module';
     {provide: APP_INTERCEPTOR, useClass: AuditLogger},
   ],
 })
-export class SaaSStarterModule implements NestModule {
-  public configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(ApiLoggerMiddleware).forRoutes('*');
-  }
-}
+export class SaaSStarterModule {}
