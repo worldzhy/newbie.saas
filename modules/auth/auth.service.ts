@@ -34,7 +34,7 @@ import {
   UNVERIFIED_EMAIL,
   UNVERIFIED_LOCATION,
   USER_NOT_FOUND,
-} from '../../errors/errors.constants';
+} from '@framework/exceptions/errors.constants';
 import {safeEmail} from '../../helpers/safe-email';
 import {GeolocationService} from '../../providers/geolocation/geolocation.service';
 import {MailService} from '../../providers/mail/mail.service';
@@ -66,7 +66,7 @@ import {
   groupMemberScopes,
   groupOwnerScopes,
   userScopes,
-  applicationScopes
+  applicationScopes,
 } from '../../helpers/scopes';
 import axios from 'axios';
 import {generateRandomString} from '@framework/utilities/random.util';
@@ -285,13 +285,12 @@ export class AuthService {
     if (!googleId) {
       throw new BadRequestException('missing googleId');
     }
-    const userMatchedWithGoogleId =
-      await this.prisma.user.findFirst({
-        where: {
-          googleId,
-        },
-        include: {emails: true},
-      });
+    const userMatchedWithGoogleId = await this.prisma.user.findFirst({
+      where: {
+        googleId,
+      },
+      include: {emails: true},
+    });
     if (userMatchedWithGoogleId) {
       return userMatchedWithGoogleId;
     }
@@ -870,10 +869,8 @@ export class AuthService {
     // Add all scopes for user self
     const scopes: string[] = Object.keys({
       ...userScopes,
-      ...applicationScopes,// add application scopes 
-    }).map(scope =>
-      scope.replace('{userId}', user.id.toString())
-    );
+      ...applicationScopes, // add application scopes
+    }).map(scope => scope.replace('{userId}', user.id.toString()));
 
     // Add scopes for groups user is part of
     const memberships = await this.prisma.membership.findMany({

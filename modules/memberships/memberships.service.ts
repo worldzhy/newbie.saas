@@ -13,7 +13,7 @@ import {
   CANNOT_UPDATE_ROLE_SOLE_OWNER,
   MEMBERSHIP_NOT_FOUND,
   UNAUTHORIZED_RESOURCE,
-} from '../../errors/errors.constants';
+} from '@framework/exceptions/errors.constants';
 import {safeEmail} from '../../helpers/safe-email';
 import {MailService} from '../../providers/mail/mail.service';
 import {Expose} from '../../helpers/interfaces';

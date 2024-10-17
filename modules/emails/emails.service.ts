@@ -11,7 +11,7 @@ import {
   EMAIL_NOT_FOUND,
   UNAUTHORIZED_RESOURCE,
   USER_NOT_FOUND,
-} from '../../errors/errors.constants';
+} from '@framework/exceptions/errors.constants';
 import {safeEmail} from '../../helpers/safe-email';
 import {Expose} from '../../helpers/interfaces';
 import {expose} from '../../helpers/expose';

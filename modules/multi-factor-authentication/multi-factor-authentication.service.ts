@@ -13,7 +13,7 @@ import {
   MFA_NOT_ENABLED,
   NO_EMAILS,
   USER_NOT_FOUND,
-} from '../../errors/errors.constants';
+} from '@framework/exceptions/errors.constants';
 import {MailService} from '../../providers/mail/mail.service';
 import {Expose} from '../../helpers/interfaces';
 import {expose} from '../../helpers/expose';

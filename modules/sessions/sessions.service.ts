@@ -8,7 +8,7 @@ import {Session} from '@prisma/client';
 import {
   SESSION_NOT_FOUND,
   UNAUTHORIZED_RESOURCE,
-} from '../../errors/errors.constants';
+} from '@framework/exceptions/errors.constants';
 import {Expose} from '../../helpers/interfaces';
 import {expose} from '../../helpers/expose';
 import {PrismaService} from '@framework/prisma/prisma.service';

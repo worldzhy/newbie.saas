@@ -11,7 +11,7 @@ import {Reflector} from '@nestjs/core';
 import {RateLimiterMemory} from 'rate-limiter-flexible';
 import {getClientIp} from 'request-ip';
 import {Observable} from 'rxjs';
-import {RATE_LIMIT_EXCEEDED} from '../errors/errors.constants';
+import {RATE_LIMIT_EXCEEDED} from '../../../framework/exceptions/errors.constants';
 import {UserRequest} from '../modules/auth/auth.interface';
 
 @Injectable()

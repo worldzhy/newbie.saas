@@ -2,7 +2,7 @@ import {Injectable, NotFoundException} from '@nestjs/common';
 import type {Prisma} from '@prisma/client';
 import {Group} from '@prisma/client';
 import randomColor from 'randomcolor';
-import {GROUP_NOT_FOUND} from '../../errors/errors.constants';
+import {GROUP_NOT_FOUND} from '@framework/exceptions/errors.constants';
 import {Expose} from '../../helpers/interfaces';
 import {expose} from '../../helpers/expose';
 import {PrismaService} from '@framework/prisma/prisma.service';

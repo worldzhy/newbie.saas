@@ -8,7 +8,7 @@ import {
   verify,
   VerifyOptions,
 } from 'jsonwebtoken';
-import {INVALID_TOKEN} from '../../errors/errors.constants';
+import {INVALID_TOKEN} from '@framework/exceptions/errors.constants';
 
 @Injectable()
 export class TokensService {

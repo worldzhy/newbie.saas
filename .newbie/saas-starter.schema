@@ -71,7 +71,6 @@ model Group {
     domains           Domain[]     @relation("groupDomain")
     subgroups         Group[]      @relation("groupSubgroups")
     memberships       Membership[] @relation("groupMembership")
-    webhooks          Webhook[]    @relation("groupWebhook")
 
     @@index([parentId])
     @@schema("microservice/saas-starter")
@@ -217,23 +216,6 @@ model Session {
     user            User     @relation("userSession", fields: [userId], references: [id])
 
     @@index([userId])
-    @@schema("microservice/saas-starter")
-}
-
-model Webhook {
-    contentType String    @default("application/json")
-    createdAt   DateTime  @default(now())
-    event       String
-    id          Int       @id @default(autoincrement())
-    isActive    Boolean   @default(false)
-    lastFiredAt DateTime?
-    groupId     Int
-    secret      String?
-    updatedAt   DateTime  @updatedAt
-    url         String
-    group       Group     @relation("groupWebhook", fields: [groupId], references: [id])
-
-    @@index([groupId])
     @@schema("microservice/saas-starter")
 }
 

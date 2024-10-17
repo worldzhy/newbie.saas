@@ -18,7 +18,6 @@ import {MultiFactorAuthenticationModule} from './modules/multi-factor-authentica
 import {SessionsModule} from './modules/sessions/sessions.module';
 import {StripeModule} from './modules/stripe/stripe.module';
 import {UsersModule} from './modules/users/users.module';
-import {WebhooksModule} from './modules/webhooks/webhooks.module';
 import {DnsModule} from './providers/dns/dns.module';
 import {ElasticsearchModule} from './providers/elasticsearch/elasticsearch.module';
 import {GeolocationModule} from './providers/geolocation/geolocation.module';
@@ -45,9 +44,8 @@ import {MetricsModule} from './modules/metrics/metrics.module';
     DnsModule,
     GeolocationModule,
     MembershipsModule,
-    StripeModule,
+    // StripeModule,
     AuditLogsModule,
-    WebhooksModule,
     ElasticsearchModule,
     S3Module,
     GoogleMapsModule,

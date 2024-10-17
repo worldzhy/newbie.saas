@@ -15,7 +15,7 @@ import {
   INVOICE_NOT_FOUND,
   SOURCE_NOT_FOUND,
   SUBSCRIPTION_NOT_FOUND,
-} from '../../errors/errors.constants';
+} from '@framework/exceptions/errors.constants';
 import {PrismaService} from '@framework/prisma/prisma.service';
 
 @Injectable()

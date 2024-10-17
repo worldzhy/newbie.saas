@@ -11,7 +11,7 @@ import * as anonymize from 'ip-anonymize';
 import {
   APPROVED_SUBNET_NOT_FOUND,
   UNAUTHORIZED_RESOURCE,
-} from '../../errors/errors.constants';
+} from '@framework/exceptions/errors.constants';
 import {GeolocationService} from '../../providers/geolocation/geolocation.service';
 import {Expose} from '../../helpers/interfaces';
 import {expose} from '../../helpers/expose';
