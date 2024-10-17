@@ -1,5 +1,11 @@
-import {Module} from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import {ConfigModule} from '@nestjs/config';
+import {RawBodyMiddleware} from '@framework/middlewares/raw-body.middleware';
 
 import {StripeBillingController} from './stripe-billing.controller';
 import {StripeWebhookController} from './stripe-webhook.controller';
@@ -20,4 +26,11 @@ import {StripeService} from './stripe.service';
     StripeWebhookController,
   ],
 })
-export class StripeModule {}
+export class StripeModule implements NestModule {
+  public configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(RawBodyMiddleware).forRoutes({
+      path: '/webhooks/stripe',
+      method: RequestMethod.POST,
+    });
+  }
+}
