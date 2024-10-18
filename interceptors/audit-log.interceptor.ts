@@ -13,6 +13,7 @@ import {tap} from 'rxjs/operators';
 import * as UAParser from 'ua-parser-js';
 import {AUDIT_LOG_DATA} from '../modules/audit-logs/audit-log.constants';
 import {UserRequest} from '../modules/auth/auth.interface';
+import {WebhooksService} from '../modules/webhooks/webhooks.service';
 import {GeolocationService} from '../providers/geolocation/geolocation.service';
 import {PrismaService} from '@framework/prisma/prisma.service';
 
@@ -23,7 +24,8 @@ export class AuditLogger implements NestInterceptor {
   constructor(
     private readonly reflector: Reflector,
     private readonly prisma: PrismaService,
-    private readonly geolocationService: GeolocationService
+    private readonly geolocationService: GeolocationService,
+    private readonly webhooksService: WebhooksService
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
@@ -71,6 +73,7 @@ export class AuditLogger implements NestInterceptor {
                 data.apiKey = {connect: {id: request.user.id}};
               if (groupId) data.group = {connect: {id: groupId}};
               await this.prisma.auditLog.create({data});
+              if (groupId) this.webhooksService.triggerWebhook(groupId, event);
             }
           }
         })()

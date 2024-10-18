@@ -14,7 +14,7 @@ import {
   DOMAIN_NOT_VERIFIED,
   INVALID_DOMAIN,
   UNAUTHORIZED_RESOURCE,
-} from '@framework/exceptions/errors.constants';
+} from '../../errors/errors.constants';
 import {DnsService} from '../../providers/dns/dns.service';
 import {Expose} from '../../helpers/interfaces';
 import {expose} from '../../helpers/expose';

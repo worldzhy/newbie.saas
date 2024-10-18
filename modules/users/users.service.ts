@@ -14,7 +14,7 @@ import {
   FILE_TOO_LARGE,
   INVALID_CREDENTIALS,
   USER_NOT_FOUND,
-} from '@framework/exceptions/errors.constants';
+} from '../../errors/errors.constants';
 import {Files} from '../../helpers/interfaces';
 import {safeEmail} from '../../helpers/safe-email';
 import {MailService} from '../../providers/mail/mail.service';

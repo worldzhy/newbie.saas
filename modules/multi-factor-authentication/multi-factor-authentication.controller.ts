@@ -8,7 +8,7 @@ import {
   Post,
 } from '@nestjs/common';
 import {User} from '@prisma/client';
-import {MFA_PHONE_OR_TOKEN_REQUIRED} from '@framework/exceptions/errors.constants';
+import {MFA_PHONE_OR_TOKEN_REQUIRED} from '../../errors/errors.constants';
 import {Expose} from '../../helpers/interfaces';
 import {Scopes} from '../auth/scope.decorator';
 import {

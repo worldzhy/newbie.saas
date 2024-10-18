@@ -10,12 +10,8 @@ import * as QuickLRU from 'quick-lru';
 import {
   API_KEY_NOT_FOUND,
   UNAUTHORIZED_RESOURCE,
-} from '@framework/exceptions/errors.constants';
-import {
-  groupOwnerScopes,
-  userScopes,
-  applicationScopes,
-} from '../../helpers/scopes';
+} from '../../errors/errors.constants';
+import {groupOwnerScopes, userScopes, applicationScopes} from '../../helpers/scopes';
 import {ElasticsearchService} from '../../providers/elasticsearch/elasticsearch.service';
 import {Expose} from '../../helpers/interfaces';
 import {expose} from '../../helpers/expose';
@@ -469,8 +465,7 @@ export class ApiKeysService {
     // newbie applicationScopes
     Object.keys(applicationScopes).forEach(
       key =>
-        (scopes[key.replace('{userId}', userId.toString())] =
-          applicationScopes[key])
+        (scopes[key.replace('{userId}', userId.toString())] = applicationScopes[key])
     );
     return scopes;
   }
