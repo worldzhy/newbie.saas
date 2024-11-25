@@ -1,43 +1,43 @@
 {
   "config-service": {
     "saas": {
-      "clientLoginUrl": "process.env.HOST_CLIENT_LOGIN_URL ?? 'http://localhost:3001/account/login'",
-      "serverHost": "process.env.HOST_SERVER ?? 'http://localhost:3000'",
+      "clientLoginUrl": "process.env.HOST_CLIENT_LOGIN_URL || 'http://localhost:3001/account/login'",
+      "serverHost": "process.env.HOST_SERVER || 'http://localhost:3000'",
       "app": {
-        "name": "process.env.APP_NAME ?? 'SaaS Starter'",
-        "frontendUrl": "process.env.APP_FRONTEND_URL ?? 'http://localhost:3000'"
+        "name": "process.env.APP_NAME || 'SaaS Starter'",
+        "frontendUrl": "process.env.APP_FRONTEND_URL || 'http://localhost:3000'"
       },
       "cache": {
         "geolocationLruSize": "int(process.env.CACHE_GEOLOCATION_LRU_SIZE, 100)",
         "apiKeyLruSize": "int(process.env.CACHE_APIKEY_LRU_SIZE, 100)"
       },
       "domain": {
-        "verificationFile": "process.env.DOMAIN_VERIFICATION_FILE ?? 'saas-verify.txt'"
+        "verificationFile": "process.env.DOMAIN_VERIFICATION_FILE || 'saas-verify.txt'"
       },
       "elasticsearch": {
         "node": "process.env.ELASTICSEARCH_NODE",
         "retries": "int(process.env.ELASTICSEARCH_FAIL_RETRIES, 3)",
         "auth": "process.env.ELASTICSEARCH_AUTH_USERNAME ? {username: process.env.ELASTICSEARCH_AUTH_USERNAME, password: process.env.ELASTICSEARCH_AUTH_PASSWORD,} : process.env.ELASTICSEARCH_AUTH_API_KEY ? process.env.ELASTICSEARCH_AUTH_API_KEY_ID ? {apiKey: {api_key: process.env.ELASTICSEARCH_AUTH_API_KEY,id: process.env.ELASTICSEARCH_AUTH_API_KEY_ID,},}: { apiKey: process.env.ELASTICSEARCH_AUTH_API_KEY }: undefined",
         "aws": {
-          "accessKeyId": "process.env.ELASTICSEARCH_AWS_ACCESS_KEY_ID ?? ''",
-          "secretAccessKey": "process.env.ELASTICSEARCH_AWS_SECRET_ACCESS_KEY ?? ''",
-          "region": "process.env.ELASTICSEARCH_AWS_REGION ?? ''"
+          "accessKeyId": "process.env.ELASTICSEARCH_AWS_ACCESS_KEY_ID || ''",
+          "secretAccessKey": "process.env.ELASTICSEARCH_AWS_SECRET_ACCESS_KEY || ''",
+          "region": "process.env.ELASTICSEARCH_AWS_REGION || ''"
         }
       },
       "googleMaps": {
         "apiKey": "process.env.GOOGLE_MAPS_API_KEY"
       },
       "googleAuth": {
-        "clientId": "process.env.GOOGLE_AUTH_CLIENT_ID ?? '000000.apps.googleusercontent.com'",
-        "clientSecret": "process.env.GOOGLE_AUTH_CLIENT_SECRET ?? 'google-auth-client-secret'"
+        "clientId": "process.env.GOOGLE_AUTH_CLIENT_ID || '000000.apps.googleusercontent.com'",
+        "clientSecret": "process.env.GOOGLE_AUTH_CLIENT_SECRET || 'google-auth-client-secret'"
       },
       "gravatar": {
         "enabled": "bool(process.env.GRAVATAR_ENABLED, true)"
       },
       "payments": {
-        "stripeApiKey": "process.env.STRIPE_API_KEY ?? 'pk_test_TYooMQauvdEDq54NiTphI7jx'",
-        "stripeProductId": "process.env.STRIPE_PRODUCT_ID ?? ''",
-        "stripeEndpointSecret": "process.env.STRIPE_ENDPOINT_SECRET ?? ''",
+        "stripeApiKey": "process.env.STRIPE_API_KEY || 'pk_test_TYooMQauvdEDq54NiTphI7jx'",
+        "stripeProductId": "process.env.STRIPE_PRODUCT_ID || ''",
+        "stripeEndpointSecret": "process.env.STRIPE_ENDPOINT_SECRET || ''",
         "paymentMethodTypes": "['card']"
       },
       "rateLimit": {
@@ -56,33 +56,33 @@
       },
       "security": {
         "saltRounds": "int(process.env.SECURITY_SALT_ROUNDS, 10)",
-        "jwtSecret": "process.env.SECURITY_JWT_SECRET ?? 'saas'",
+        "jwtSecret": "process.env.SECURITY_JWT_SECRET || 'saas'",
         "totpWindowPast": "int(process.env.SECURITY_TOTP_WINDOW_PAST, 1)",
         "totpWindowFuture": "int(process.env.SECURITY_TOTP_WINDOW_FUTURE, 0)",
-        "mfaTokenExpiry": "process.env.SECURITY_MFA_TOKEN_EXPIRY ?? '10m'",
-        "mergeUsersTokenExpiry": "process.env.SECURITY_MERGE_USERS_TOKEN_EXPIRY ?? '30m'",
-        "accessTokenExpiry": "process.env.SECURITY_ACCESS_TOKEN_EXPIRY ?? '1h'",
+        "mfaTokenExpiry": "process.env.SECURITY_MFA_TOKEN_EXPIRY || '10m'",
+        "mergeUsersTokenExpiry": "process.env.SECURITY_MERGE_USERS_TOKEN_EXPIRY || '30m'",
+        "accessTokenExpiry": "process.env.SECURITY_ACCESS_TOKEN_EXPIRY || '1h'",
         "passwordPwnedCheck": "bool(process.env.SECURITY_PASSWORD_PWNED_CHECK, true)",
         "unusedRefreshTokenExpiryDays": "int(process.env.SECURITY_DELETE_EXPIRED_SESSIONS, 30)",
         "inactiveUserDeleteDays": "int(process.env.SECURITY_INACTIVE_USER_DELETE_DAYS, 30)"
       },
       "s3": {
-        "accessKeyId": "process.env.AWS_S3_ACCESS_KEY ?? ''",
-        "secretAccessKey": "process.env.AWS_S3_SECRET_KEY ?? ''",
-        "region": "process.env.AWS_S3_REGION ?? ''",
-        "profilePictureBucket": "process.env.AWS_S3_PROFILE_PICTURE_BUCKET ?? ''",
-        "profilePictureCdnHostname": "process.env.AWS_S3_PROFILE_PICTURE_CDN_HOST_NAME ?? ''"
+        "accessKeyId": "process.env.AWS_S3_ACCESS_KEY || ''",
+        "secretAccessKey": "process.env.AWS_S3_SECRET_KEY || ''",
+        "region": "process.env.AWS_S3_REGION || ''",
+        "profilePictureBucket": "process.env.AWS_S3_PROFILE_PICTURE_BUCKET || ''",
+        "profilePictureCdnHostname": "process.env.AWS_S3_PROFILE_PICTURE_CDN_HOST_NAME || ''"
       },
       "tracking": {
-        "mode": "process.env.TRACKING_MODE ?? 'api-key'",
-        "index": "process.env.TRACKING_INDEX ?? 'saas-logs'",
+        "mode": "process.env.TRACKING_MODE || 'api-key'",
+        "index": "process.env.TRACKING_INDEX || 'saas-logs'",
         "deleteOldLogs": "bool(process.env.TRACKING_DELETE_OLD_LOGS, true)",
         "deleteOldLogsDays": "int(process.env.TRACKING_DELETE_OLD_LOGS_DAYS, 90)"
       },
       "twilio": {
         "retries": "int(process.env.TWILIO_FAIL_RETRIES, 3)",
-        "accountSid": "process.env.TWILIO_ACCOUNT_SID ?? ''",
-        "authToken": "process.env.TWILIO_AUTH_TOKEN ?? ''"
+        "accountSid": "process.env.TWILIO_ACCOUNT_SID || ''",
+        "authToken": "process.env.TWILIO_AUTH_TOKEN || ''"
       },
       "webhooks": {
         "retries": "int(process.env.WEBHOOK_FAIL_RETRIES, 3)"
