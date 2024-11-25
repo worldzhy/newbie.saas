@@ -28,14 +28,14 @@
         "apiKey": "process.env.GOOGLE_MAPS_API_KEY"
       },
       "googleAuth": {
-        "clientId": "process.env.GOOGLE_CLIENT_ID",
-        "clientSecret": "process.env.GOOGLE_CLIENT_SECRET"
+        "clientId": "process.env.GOOGLE_AUTH_CLIENT_ID ?? '000000.apps.googleusercontent.com'",
+        "clientSecret": "process.env.GOOGLE_AUTH_CLIENT_SECRET ?? 'google-auth-client-secret'"
       },
       "gravatar": {
         "enabled": "bool(process.env.GRAVATAR_ENABLED, true)"
       },
       "payments": {
-        "stripeApiKey": "process.env.STRIPE_API_KEY ?? ''",
+        "stripeApiKey": "process.env.STRIPE_API_KEY ?? 'pk_test_TYooMQauvdEDq54NiTphI7jx'",
         "stripeProductId": "process.env.STRIPE_PRODUCT_ID ?? ''",
         "stripeEndpointSecret": "process.env.STRIPE_ENDPOINT_SECRET ?? ''",
         "paymentMethodTypes": "['card']"
@@ -107,6 +107,8 @@
     "ELASTICSEARCH_AWS_SECRET_ACCESS_KEY": "",
     "ELASTICSEARCH_AWS_REGION": "",
     "GOOGLE_MAPS_API_KEY": "",
+    "GOOGLE_AUTH_CLIENT_ID": "",
+    "GOOGLE_AUTH_CLIENT_SECRET": "",
     "GRAVATAR_ENABLED": "",
     "STRIPE_API_KEY": "",
     "STRIPE_PRODUCT_ID": "",
@@ -139,8 +141,6 @@
     "TWILIO_FAIL_RETRIES": "",
     "TWILIO_ACCOUNT_SID": "",
     "TWILIO_AUTH_TOKEN": "",
-    "GOOGLE_CLIENT_ID": "",
-    "GOOGLE_CLIENT_SECRET": "",
     "WEBHOOK_FAIL_RETRIES": ""
   },
   "dependencies": {
@@ -168,7 +168,7 @@
     "randomcolor": "latest",
     "rate-limiter-flexible": "latest",
     "request-ip": "latest",
-    "stripe": "latest",
+    "stripe": "^16.9.0",
     "twilio": "latest",
     "ua-parser-js": "latest",
     "passport-google-oauth20": "^2.0.0"

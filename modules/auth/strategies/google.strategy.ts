@@ -5,12 +5,10 @@ import {
   Profile,
   VerifyCallback,
   StrategyOptionWithRequest,
-  VerifyFunctionWithRequest,
 } from 'passport-google-oauth20';
 import {AuthService} from '../auth.service';
 import {ConfigService} from '@nestjs/config';
 import {User} from '@prisma/client';
-// import { Users } from 'src/modules/users/entities/users.entity';
 
 /**
  * local dev, to change file node_modules/oauth/lib/oauth2.js

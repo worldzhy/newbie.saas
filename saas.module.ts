@@ -8,7 +8,7 @@ import {ApprovedSubnetsModule} from './modules/approved-subnets/approved-subnets
 import {AuditLogsModule} from './modules/audit-logs/audit-logs.module';
 import {AuthModule} from './modules/auth/auth.module';
 import {ScopesGuard} from './modules/auth/guards/scope.guard';
-import {SaaSStarterAuthGuard} from './modules/auth/guards/auth.guard';
+import {SaasAuthGuard} from './modules/auth/guards/auth.guard';
 import {GoogleAuthGuard} from './modules/auth/guards/google-auth.guard';
 import {DomainsModule} from './modules/domains/domains.module';
 import {EmailsModule} from './modules/emails/emails.module';
@@ -54,9 +54,9 @@ import {MetricsModule} from './modules/metrics/metrics.module';
   providers: [
     GoogleAuthGuard,
     {provide: APP_INTERCEPTOR, useClass: RateLimitInterceptor},
-    {provide: APP_GUARD, useClass: SaaSStarterAuthGuard},
+    {provide: APP_GUARD, useClass: SaasAuthGuard},
     {provide: APP_GUARD, useClass: ScopesGuard},
     {provide: APP_INTERCEPTOR, useClass: AuditLogger},
   ],
 })
-export class SaaSStarterModule {}
+export class SaasModule {}

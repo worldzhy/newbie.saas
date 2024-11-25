@@ -31,7 +31,7 @@ export class StripeService {
       'microservices.saas.payments.stripeApiKey'
     );
     this.stripe = new Stripe(stripeApiKey, {
-      apiVersion: '2024-11-20.acacia',
+      apiVersion: '2024-06-20',
     });
   }
 

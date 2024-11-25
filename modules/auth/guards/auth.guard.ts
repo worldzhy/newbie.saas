@@ -4,7 +4,7 @@ import {AuthGuard} from '@nestjs/passport';
 import {PUBLIC_ENDPOINT} from '../auth.constants';
 
 @Injectable()
-export class SaaSStarterAuthGuard extends AuthGuard('saas') {
+export class SaasAuthGuard extends AuthGuard('saas') {
   constructor(private readonly reflector: Reflector) {
     super();
   }
