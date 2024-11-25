@@ -14,13 +14,13 @@ import {
   NO_EMAILS,
   USER_NOT_FOUND,
 } from '../../errors/errors.constants';
-import {MailService} from '../../providers/mail/mail.service';
 import {Expose} from '../../helpers/interfaces';
 import {expose} from '../../helpers/expose';
 import {PrismaService} from '@framework/prisma/prisma.service';
 import {TwilioService} from '../../providers/twilio/twilio.service';
 import {AuthService} from '../auth/auth.service';
 import {generateRandomString} from '@framework/utilities/random.util';
+import {EmailService} from '@microservices/notification/email/email.service';
 
 @Injectable()
 export class MultiFactorAuthenticationService {
@@ -29,7 +29,7 @@ export class MultiFactorAuthenticationService {
     private auth: AuthService,
     private configService: ConfigService,
     private twilioService: TwilioService,
-    private emailService: MailService
+    private emailService: EmailService
   ) {}
 
   async requestTotpMfa(userId: number): Promise<string> {
@@ -59,8 +59,7 @@ export class MultiFactorAuthenticationService {
     return this.twilioService.send({
       to: phone,
       body: `${this.auth.getOneTimePassword(secret)} is your ${
-        this.configService.get<string>('microservices.saas-starter.app.name') ??
-        ''
+        this.configService.get<string>('microservices.saas.app.name') ?? ''
       } verification code.`,
     });
   }
@@ -84,12 +83,13 @@ export class MultiFactorAuthenticationService {
       data: {twoFactorSecret: secret},
     });
     if (!user.prefersEmail) throw new BadRequestException(NO_EMAILS);
-    return this.emailService.send({
-      to: `"${user.name}" <${user.prefersEmail.emailSafe}>`,
-      template: 'auth/enable-email-mfa',
-      data: {
-        name: user.name,
-        code: this.auth.getOneTimePassword(secret),
+    return this.emailService.sendWithTemplate({
+      toAddress: `"${user.name}" <${user.prefersEmail.emailSafe}>`,
+      template: {
+        'auth/enable-email-mfa': {
+          userName: user.name,
+          code: this.auth.getOneTimePassword(secret),
+        },
       },
     });
   }
@@ -127,7 +127,7 @@ export class MultiFactorAuthenticationService {
       const code = await hash(
         unsafeCode,
         this.configService.get<number>(
-          'microservices.saas-starter.security.saltRounds'
+          'microservices.saas.security.saltRounds'
         ) ?? 10
       );
       await this.prisma.backupCode.create({

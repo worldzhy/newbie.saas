@@ -17,7 +17,7 @@ import {createRandomBytes, createDigest} from '@otplib/plugin-crypto';
 import {keyEncoder, keyDecoder} from '@otplib/plugin-thirty-two';
 import qrcode from 'qrcode';
 import * as randomColor from 'randomcolor';
-import * as UAParser from 'ua-parser-js';
+import {UAParser} from 'ua-parser-js';
 import {
   COMPROMISED_PASSWORD,
   EMAIL_USER_CONFLICT,
@@ -37,7 +37,6 @@ import {
 } from '../../errors/errors.constants';
 import {safeEmail} from '../../helpers/safe-email';
 import {GeolocationService} from '../../providers/geolocation/geolocation.service';
-import {MailService} from '../../providers/mail/mail.service';
 import {Expose} from '../../helpers/interfaces';
 import {expose} from '../../helpers/expose';
 import {PrismaService} from '@framework/prisma/prisma.service';
@@ -66,10 +65,11 @@ import {
   groupMemberScopes,
   groupOwnerScopes,
   userScopes,
-  applicationScopes
+  applicationScopes,
 } from '../../helpers/scopes';
 import axios from 'axios';
 import {generateRandomString} from '@framework/utilities/random.util';
+import {EmailService} from '@microservices/notification/email/email.service';
 
 @Injectable()
 export class AuthService {
@@ -77,7 +77,7 @@ export class AuthService {
 
   constructor(
     private prisma: PrismaService,
-    private email: MailService,
+    private email: EmailService,
     private configService: ConfigService,
     private pwnedService: PwnedService,
     private tokensService: TokensService,
@@ -88,10 +88,10 @@ export class AuthService {
     this.authenticator = authenticator.create({
       window: [
         this.configService.get<number>(
-          'microservices.saas-starter.security.totpWindowPast'
+          'microservices.saas.security.totpWindowPast'
         ) ?? 0,
         this.configService.get<number>(
-          'microservices.saas-starter.security.totpWindowFuture'
+          'microservices.saas.security.totpWindowFuture'
         ) ?? 0,
       ],
       keyEncoder,
@@ -217,9 +217,7 @@ export class AuthService {
     }
 
     if (
-      this.configService.get<boolean>(
-        'microservices.saas-starter.gravatar.enabled'
-      )
+      this.configService.get<boolean>('microservices.saas.gravatar.enabled')
     ) {
       for await (const emailString of [email, emailSafe]) {
         const md5Email = createHash('md5').update(emailString).digest('hex');
@@ -285,13 +283,12 @@ export class AuthService {
     if (!googleId) {
       throw new BadRequestException('missing googleId');
     }
-    const userMatchedWithGoogleId =
-      await this.prisma.user.findFirst({
-        where: {
-          googleId,
-        },
-        include: {emails: true},
-      });
+    const userMatchedWithGoogleId = await this.prisma.user.findFirst({
+      where: {
+        googleId,
+      },
+      include: {emails: true},
+    });
     if (userMatchedWithGoogleId) {
       return userMatchedWithGoogleId;
     }
@@ -353,23 +350,37 @@ export class AuthService {
     if (!emailDetails) throw new NotFoundException(USER_NOT_FOUND);
     if (emailDetails.isVerified)
       throw new ConflictException(EMAIL_VERIFIED_CONFLICT);
-    this.email.send({
-      to: `"${emailDetails.user.name}" <${email}>`,
+    this.email.sendWithTemplate({
+      toAddress: `"${emailDetails.user.name}" <${email}>`,
       template: resend
-        ? 'auth/resend-email-verification'
-        : 'auth/email-verification',
-      data: {
-        name: emailDetails.user.name,
-        days: 7,
-        link: `${
-          origin ??
-          this.configService.get<string>('microservices.app.frontendUrl')
-        }/auth/link/verify-email?token=${this.tokensService.signJwt(
-          EMAIL_VERIFY_TOKEN,
-          {id: emailDetails.id},
-          '7d'
-        )}`,
-      },
+        ? {
+            'auth/resend-email-verification': {
+              userName: emailDetails.user.name,
+              link: `${
+                origin ??
+                this.configService.get<string>('microservices.app.frontendUrl')
+              }/auth/link/verify-email?token=${this.tokensService.signJwt(
+                EMAIL_VERIFY_TOKEN,
+                {id: emailDetails.id},
+                '7d'
+              )}`,
+              linkValidDays: 7,
+            },
+          }
+        : {
+            'auth/email-verification': {
+              userName: emailDetails.user.name,
+              link: `${
+                origin ??
+                this.configService.get<string>('microservices.app.frontendUrl')
+              }/auth/link/verify-email?token=${this.tokensService.signJwt(
+                EMAIL_VERIFY_TOKEN,
+                {id: emailDetails.id},
+                '7d'
+              )}`,
+              linkValidDays: 7,
+            },
+          },
     });
     return {queued: true};
   }
@@ -435,8 +446,7 @@ export class AuthService {
     });
     const otpauth = this.authenticator.keyuri(
       userId.toString(),
-      this.configService.get<string>('microservices.saas-starter.app.name') ??
-        '',
+      this.configService.get<string>('microservices.saas.app.name') ?? '',
       secret
     );
     return qrcode.toDataURL(otpauth);
@@ -502,20 +512,21 @@ export class AuthService {
       include: {user: true},
     });
     if (!emailDetails) throw new NotFoundException(USER_NOT_FOUND);
-    this.email.send({
-      to: `"${emailDetails.user.name}" <${email}>`,
-      template: 'auth/password-reset',
-      data: {
-        name: emailDetails.user.name,
-        minutes: 30,
-        link: `${
-          origin ??
-          this.configService.get<string>('microservices.app.frontendUrl')
-        }/auth/link/reset-password?token=${this.tokensService.signJwt(
-          PASSWORD_RESET_TOKEN,
-          {id: emailDetails.user.id},
-          '30m'
-        )}`,
+    this.email.sendWithTemplate({
+      toAddress: `"${emailDetails.user.name}" <${email}>`,
+      template: {
+        'auth/password-reset': {
+          userName: emailDetails.user.name,
+          link: `${
+            origin ??
+            this.configService.get<string>('microservices.app.frontendUrl')
+          }/auth/link/reset-password?token=${this.tokensService.signJwt(
+            PASSWORD_RESET_TOKEN,
+            {id: emailDetails.user.id},
+            '30m'
+          )}`,
+          linkValidMinutes: 30,
+        },
       },
     });
     return {queued: true};
@@ -545,12 +556,9 @@ export class AuthService {
     await this.approvedSubnetsService.upsertNewSubnet(id, ipAddress);
 
     if (user.prefersEmail) {
-      this.email.send({
-        to: `"${user.name}" <${user.prefersEmail.email}>`,
-        template: 'users/password-changed',
-        data: {
-          name: user.name,
-        },
+      this.email.sendWithTemplate({
+        toAddress: `"${user.name}" <${user.prefersEmail.email}>`,
+        template: {'users/password-changed': {userName: user.name}},
       });
     }
 
@@ -589,16 +597,17 @@ export class AuthService {
           role: 'MEMBER',
         },
       });
-      this.email.send({
-        to: `"${result.user.name}" <${result.email}>`,
-        template: 'groups/invitation',
-        data: {
-          name: result.user.name,
-          group: group.name,
-          link: `${
-            origin ??
-            this.configService.get<string>('microservices.app.frontendUrl')
-          }/groups/${group.id}`,
+      this.email.sendWithTemplate({
+        toAddress: `"${result.user.name}" <${result.email}>`,
+        template: {
+          'teams/invitation': {
+            userName: result.user.name,
+            teamName: group.name,
+            link: `${
+              origin ??
+              this.configService.get<string>('microservices.app.frontendUrl')
+            }/teams/${group.id}`,
+          },
         },
       });
     }
@@ -649,18 +658,19 @@ export class AuthService {
               .filter(i => i)
               .join(', ') || 'Unknown location';
           if (user.prefersEmail)
-            this.email.send({
-              to: `"${user.name}" <${user.prefersEmail.email}>`,
-              template: 'auth/used-backup-code',
-              data: {
-                name: user.name,
-                locationName,
-                link: `${
-                  origin ??
-                  this.configService.get<string>(
-                    'microservices.app.frontendUrl'
-                  )
-                }/users/${id}/sessions`,
+            this.email.sendWithTemplate({
+              toAddress: `"${user.name}" <${user.prefersEmail.email}>`,
+              template: {
+                'auth/used-backup-code': {
+                  userName: user.name,
+                  locationName,
+                  link: `${
+                    origin ??
+                    this.configService.get<string>(
+                      'microservices.app.frontendUrl'
+                    )
+                  }/users/${id}/sessions`,
+                },
               },
             });
         }
@@ -682,7 +692,7 @@ export class AuthService {
       LOGIN_ACCESS_TOKEN,
       payload,
       this.configService.get<string>(
-        'microservices.saas-starter.security.accessTokenExpiry'
+        'microservices.saas.security.accessTokenExpiry'
       )
     );
   }
@@ -693,7 +703,7 @@ export class AuthService {
     user: User
   ): Promise<TokenResponse> {
     const token = await generateRandomString(64);
-    const ua = new UAParser(userAgent);
+    const ua = UAParser(userAgent);
     // const location = await this.geolocationService.getLocation(ipAddress);
     const {id} = await this.prisma.session.create({
       data: {
@@ -705,11 +715,10 @@ export class AuthService {
         // countryCode: location?.country?.iso_code,
         userAgent,
         browser:
-          `${ua.getBrowser().name ?? ''} ${
-            ua.getBrowser().version ?? ''
-          }`.trim() || undefined,
+          `${ua.browser.name ?? ''} ${ua.browser.version ?? ''}`.trim() ||
+          undefined,
         operatingSystem:
-          `${ua.getOS().name ?? ''} ${ua.getOS().version ?? ''}`
+          `${ua.os.name ?? ''} ${ua.os.version ?? ''}`
             .replace('Mac OS', 'macOS')
             .trim() || undefined,
         user: {connect: {id: user.id}},
@@ -733,28 +742,29 @@ export class AuthService {
       MULTI_FACTOR_TOKEN,
       mfaTokenPayload,
       this.configService.get<string>(
-        'microservices.saas-starter.security.mfaTokenExpiry'
+        'microservices.saas.security.mfaTokenExpiry'
       )
     );
     if (user.twoFactorMethod === 'EMAIL' || forceMethod === 'EMAIL') {
       if (user.prefersEmail) {
-        this.email.send({
-          to: `"${user.name}" <${user.prefersEmail.email}>`,
-          template: 'auth/login-link',
-          data: {
-            name: user.name,
-            minutes: parseInt(
-              this.configService.get<string>(
-                'microservices.saas-starter.security.mfaTokenExpiry'
-              ) ?? ''
-            ),
-            link: `${this.configService.get<string>(
-              'microservices.app.frontendUrl'
-            )}/auth/link/login%2Ftoken?token=${this.tokensService.signJwt(
-              EMAIL_MFA_TOKEN,
-              {id: user.id},
-              '30m'
-            )}`,
+        this.email.sendWithTemplate({
+          toAddress: `"${user.name}" <${user.prefersEmail.email}>`,
+          template: {
+            'auth/login-link': {
+              userName: user.name,
+              link: `${this.configService.get<string>(
+                'microservices.app.frontendUrl'
+              )}/auth/link/login%2Ftoken?token=${this.tokensService.signJwt(
+                EMAIL_MFA_TOKEN,
+                {id: user.id},
+                '30m'
+              )}`,
+              linkValidMinutes: parseInt(
+                this.configService.get<string>(
+                  'microservices.saas.security.mfaTokenExpiry'
+                ) ?? ''
+              ),
+            },
           },
         });
       }
@@ -766,9 +776,7 @@ export class AuthService {
         this.twilioService.send({
           to: user.twoFactorPhone,
           body: `${this.getOneTimePassword(user.twoFactorSecret)} is your ${
-            this.configService.get<string>(
-              'microservices.saas-starter.app.name'
-            ) ?? ''
+            this.configService.get<string>('microservices.saas.app.name') ?? ''
           } verification code.`,
         });
       }
@@ -814,21 +822,22 @@ export class AuthService {
           .filter(i => i)
           .join(', ') || 'Unknown location';
       if (user.prefersEmail)
-        this.email.send({
-          to: `"${user.name}" <${user.prefersEmail.email}>`,
-          template: 'auth/approve-subnet',
-          data: {
-            name: user.name,
-            locationName,
-            minutes: 30,
-            link: `${
-              origin ??
-              this.configService.get<string>('microservices.app.frontendUrl')
-            }/auth/link/approve-subnet?token=${this.tokensService.signJwt(
-              APPROVE_SUBNET_TOKEN,
-              {id},
-              '30m'
-            )}`,
+        this.email.sendWithTemplate({
+          toAddress: `"${user.name}" <${user.prefersEmail.email}>`,
+          template: {
+            'auth/approve-subnet': {
+              userName: user.name,
+              locationName,
+              link: `${
+                origin ??
+                this.configService.get<string>('microservices.app.frontendUrl')
+              }/auth/link/approve-subnet?token=${this.tokensService.signJwt(
+                APPROVE_SUBNET_TOKEN,
+                {id},
+                '30m'
+              )}`,
+              linkValidMinutes: 30,
+            },
           },
         });
       throw new UnauthorizedException(UNVERIFIED_LOCATION);
@@ -842,13 +851,13 @@ export class AuthService {
     if (!ignorePwnedPassword) {
       if (
         !this.configService.get<boolean>(
-          'microservices.saas-starter.security.passwordPwnedCheck'
+          'microservices.saas.security.passwordPwnedCheck'
         )
       )
         return await hash(
           password,
           this.configService.getOrThrow<number>(
-            'microservices.saas-starter.security.saltRounds'
+            'microservices.saas.security.saltRounds'
           )
         );
       if (!(await this.pwnedService.isPasswordSafe(password)))
@@ -857,7 +866,7 @@ export class AuthService {
     return await hash(
       password,
       this.configService.getOrThrow<number>(
-        'microservices.saas-starter.security.saltRounds'
+        'microservices.saas.security.saltRounds'
       )
     );
   }
@@ -870,10 +879,8 @@ export class AuthService {
     // Add all scopes for user self
     const scopes: string[] = Object.keys({
       ...userScopes,
-      ...applicationScopes,// add application scopes 
-    }).map(scope =>
-      scope.replace('{userId}', user.id.toString())
-    );
+      ...applicationScopes, // add application scopes
+    }).map(scope => scope.replace('{userId}', user.id.toString()));
 
     // Add scopes for groups user is part of
     const memberships = await this.prisma.membership.findMany({

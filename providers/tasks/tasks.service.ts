@@ -29,7 +29,7 @@ export class TasksService {
     const now = new Date();
     const unusedRefreshTokenExpiryDays =
       this.configService.get<number>(
-        'microservices.saas-starter.security.unusedRefreshTokenExpiryDays'
+        'microservices.saas.security.unusedRefreshTokenExpiryDays'
       ) ?? 30;
     now.setDate(now.getDate() - unusedRefreshTokenExpiryDays);
     const deleted = await this.prisma.session.deleteMany({
@@ -44,7 +44,7 @@ export class TasksService {
     const now = new Date();
     const inactiveUserDeleteDays =
       this.configService.get<number>(
-        'microservices.saas-starter.security.inactiveUserDeleteDays'
+        'microservices.saas.security.inactiveUserDeleteDays'
       ) ?? 30;
     now.setDate(now.getDate() - inactiveUserDeleteDays);
     const deleted = await this.prisma.user.findMany({
@@ -63,9 +63,7 @@ export class TasksService {
 
   @Cron(CronExpression.EVERY_DAY_AT_3PM)
   async deleteOldLogs() {
-    const config = this.configService.getOrThrow(
-      'microservices.saas-starter.tracking'
-    );
+    const config = this.configService.getOrThrow('microservices.saas.tracking');
     if (config.deleteOldLogs)
       return this.elasticsearch.deleteOldRecords(
         config.index,

@@ -11,7 +11,11 @@ import {
   API_KEY_NOT_FOUND,
   UNAUTHORIZED_RESOURCE,
 } from '../../errors/errors.constants';
-import {groupOwnerScopes, userScopes, applicationScopes} from '../../helpers/scopes';
+import {
+  groupOwnerScopes,
+  userScopes,
+  applicationScopes,
+} from '../../helpers/scopes';
 import {ElasticsearchService} from '../../providers/elasticsearch/elasticsearch.service';
 import {Expose} from '../../helpers/interfaces';
 import {expose} from '../../helpers/expose';
@@ -29,7 +33,7 @@ export class ApiKeysService {
   ) {
     this.lru = new QuickLRU<string, ApiKey>({
       maxSize: this.configService.getOrThrow<number>(
-        'microservices.saas-starter.cache.apiKeyLruSize'
+        'microservices.saas.cache.apiKeyLruSize'
       ),
     });
   }
@@ -319,12 +323,12 @@ export class ApiKeysService {
     now.setDate(
       now.getDate() -
         this.configService.getOrThrow<number>(
-          'microservices.saas-starter.tracking.deleteOldLogsDays'
+          'microservices.saas.tracking.deleteOldLogsDays'
         )
     );
     const result = await this.elasticsearch.search({
       index: this.configService.get<string>(
-        'microservices.saas-starter.tracking.index'
+        'microservices.saas.tracking.index'
       ),
       from: params.cursor?.id,
       body: {
@@ -465,7 +469,8 @@ export class ApiKeysService {
     // newbie applicationScopes
     Object.keys(applicationScopes).forEach(
       key =>
-        (scopes[key.replace('{userId}', userId.toString())] = applicationScopes[key])
+        (scopes[key.replace('{userId}', userId.toString())] =
+          applicationScopes[key])
     );
     return scopes;
   }

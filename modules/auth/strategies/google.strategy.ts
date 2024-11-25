@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { PassportStrategy } from '@nestjs/passport';
+import {BadRequestException, Injectable} from '@nestjs/common';
+import {PassportStrategy} from '@nestjs/passport';
 import {
   Strategy,
   Profile,
@@ -7,8 +7,8 @@ import {
   StrategyOptionWithRequest,
   VerifyFunctionWithRequest,
 } from 'passport-google-oauth20';
-import { AuthService } from '../auth.service';
-import { ConfigService } from '@nestjs/config';
+import {AuthService} from '../auth.service';
+import {ConfigService} from '@nestjs/config';
 import {User} from '@prisma/client';
 // import { Users } from 'src/modules/users/entities/users.entity';
 
@@ -27,14 +27,16 @@ import {User} from '@prisma/client';
 export class GoogleStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly authService: AuthService,
-    private readonly configService: ConfigService,
+    private readonly configService: ConfigService
   ) {
     super(<StrategyOptionWithRequest>{
-      clientID: configService.get('microservices.saas-starter.googleAuth.clientId'),
-      clientSecret: configService.get('microservices.saas-starter.googleAuth.clientSecret'),
-      callbackURL: `${configService.get('microservices.saas-starter.serverHost')}/auth/google/callback`,
+      clientID: configService.get('microservices.saas.googleAuth.clientId'),
+      clientSecret: configService.get(
+        'microservices.saas.googleAuth.clientSecret'
+      ),
+      callbackURL: `${configService.get('microservices.saas.serverHost')}/auth/google/callback`,
       // passReqToCallback: true,
-      scope: [ 'email', 'profile'],
+      scope: ['email', 'profile'],
     });
   }
 
@@ -43,7 +45,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
     accessToken: string,
     refreshToken: string,
     profile: Profile,
-    done: VerifyCallback,
+    done: VerifyCallback
   ): Promise<User> {
     if (!profile) {
       throw new BadRequestException();

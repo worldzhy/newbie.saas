@@ -13,7 +13,7 @@ export class GeolocationService implements OnModuleDestroy {
     this.lru = new QuickLRU<string, Partial<CityResponse>>({
       maxSize:
         this.configService.get<number>(
-          'microservices.saas-starter.cache.geolocationLruSize'
+          'microservices.saas.cache.geolocationLruSize'
         ) ?? 100,
     });
   }

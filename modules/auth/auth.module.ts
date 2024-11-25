@@ -2,7 +2,6 @@ import {Module} from '@nestjs/common';
 import {ConfigModule} from '@nestjs/config';
 import {PassportModule} from '@nestjs/passport';
 import {GeolocationModule} from '../../providers/geolocation/geolocation.module';
-import {MailModule} from '../../providers/mail/mail.module';
 
 import {PwnedModule} from '../../providers/pwned/pwned.module';
 import {TokensModule} from '../../providers/tokens/tokens.module';
@@ -18,7 +17,6 @@ import {GoogleStrategy} from './strategies/google.strategy';
 @Module({
   imports: [
     PassportModule.register({defaultStrategy: 'jwt'}),
-    MailModule,
     TokensModule,
     ConfigModule,
     PwnedModule,

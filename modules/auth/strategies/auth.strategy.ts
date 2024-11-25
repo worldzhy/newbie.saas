@@ -11,7 +11,7 @@ import {AccessTokenClaims, AccessTokenParsed} from '../auth.interface';
 const Strategy = require('passport-strategy');
 
 class SaaSStarterStrategyName extends Strategy {
-  name = 'saas-starter';
+  name = 'saas';
 }
 
 @Injectable()

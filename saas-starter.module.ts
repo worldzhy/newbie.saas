@@ -23,7 +23,6 @@ import {DnsModule} from './providers/dns/dns.module';
 import {ElasticsearchModule} from './providers/elasticsearch/elasticsearch.module';
 import {GeolocationModule} from './providers/geolocation/geolocation.module';
 import {GoogleMapsModule} from './providers/google-maps/google-maps.module';
-import {MailModule} from './providers/mail/mail.module';
 import {S3Module} from './providers/s3/s3.module';
 import {TasksModule} from './providers/tasks/tasks.module';
 import {MetricsModule} from './modules/metrics/metrics.module';
@@ -34,7 +33,6 @@ import {MetricsModule} from './modules/metrics/metrics.module';
     TasksModule,
     UsersModule,
     AuthModule,
-    MailModule,
     SessionsModule,
     EmailsModule,
     GroupsModule,

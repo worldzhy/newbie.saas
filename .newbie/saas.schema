@@ -1,5 +1,5 @@
 // ! ------------------------------------------------------------ //
-// !           [Microservice] SaaS Starter models                 //
+// !           [Microservice] SaaS models                 //
 // ! ------------------------------------------------------------ //
 // * User                                                         //
 // * Group                                                        //
@@ -50,7 +50,7 @@ model User {
     sessions             Session[]            @relation("userSession")
 
     @@index([prefersEmailId])
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }
 
 model Group {
@@ -74,7 +74,7 @@ model Group {
     webhooks          Webhook[]    @relation("groupWebhook")
 
     @@index([parentId])
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }
 
 model Email {
@@ -89,7 +89,7 @@ model Email {
     users      User[]   @relation("userPrefersEmail")
 
     @@index([userId])
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }
 
 model ApiKey {
@@ -110,7 +110,7 @@ model ApiKey {
 
     @@index([groupId])
     @@index([userId])
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }
 
 model ApprovedSubnet {
@@ -126,7 +126,7 @@ model ApprovedSubnet {
     user        User     @relation("userApprovedSubnet", fields: [userId], references: [id])
 
     @@index([userId])
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }
 
 model BackupCode {
@@ -139,7 +139,7 @@ model BackupCode {
     user      User     @relation("userBackupCode", fields: [userId], references: [id])
 
     @@index([userId])
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }
 
 model CouponCode {
@@ -155,7 +155,7 @@ model CouponCode {
     currency         String
     description      String?
 
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }
 
 model Domain {
@@ -169,7 +169,7 @@ model Domain {
     group            Group    @relation("groupDomain", fields: [groupId], references: [id])
 
     @@index([groupId])
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }
 
 model Identity {
@@ -182,7 +182,7 @@ model Identity {
     user      User         @relation("userIdentity", fields: [userId], references: [id])
 
     @@index([userId])
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }
 
 model Membership {
@@ -197,7 +197,7 @@ model Membership {
 
     @@index([groupId])
     @@index([userId])
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }
 
 model Session {
@@ -217,7 +217,7 @@ model Session {
     user            User     @relation("userSession", fields: [userId], references: [id])
 
     @@index([userId])
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }
 
 model Webhook {
@@ -234,7 +234,7 @@ model Webhook {
     group       Group     @relation("groupWebhook", fields: [groupId], references: [id])
 
     @@index([groupId])
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }
 
 model AuditLog {
@@ -261,7 +261,7 @@ model AuditLog {
     @@index([apiKeyId])
     @@index([groupId])
     @@index([userId])
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }
 
 enum Gender {
@@ -270,7 +270,7 @@ enum Gender {
     NONBINARY
     UNKNOWN
 
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }
 
 enum NotificationEmail {
@@ -278,7 +278,7 @@ enum NotificationEmail {
     UPDATES
     PROMOTIONS
 
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }
 
 enum PrefersColorScheme {
@@ -286,21 +286,21 @@ enum PrefersColorScheme {
     LIGHT
     DARK
 
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }
 
 enum PrefersReducedMotion {
     NO_PREFERENCE
     REDUCE
 
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }
 
 enum UserRole {
     SUDO
     USER
 
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }
 
 enum MfaMethod {
@@ -309,7 +309,7 @@ enum MfaMethod {
     TOTP
     EMAIL
 
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }
 
 enum MembershipRole {
@@ -317,7 +317,7 @@ enum MembershipRole {
     ADMIN
     MEMBER
 
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }
 
 enum IdentityType {
@@ -325,5 +325,5 @@ enum IdentityType {
     APPLE
     SLACK
 
-    @@schema("microservice/saas-starter")
+    @@schema("microservice/saas")
 }

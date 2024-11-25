@@ -1,6 +1,5 @@
 import {Module} from '@nestjs/common';
 import {ConfigModule} from '@nestjs/config';
-import {MailModule} from '../../providers/mail/mail.module';
 
 import {TokensModule} from '../../providers/tokens/tokens.module';
 import {ApiKeysModule} from '../api-keys/api-keys.module';
@@ -12,7 +11,6 @@ import {MembershipsService} from './memberships.service';
 
 @Module({
   imports: [
-    MailModule,
     ConfigModule,
     AuthModule,
     GroupsModule,

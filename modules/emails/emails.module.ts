@@ -2,7 +2,6 @@ import {Module} from '@nestjs/common';
 import {ConfigModule} from '@nestjs/config';
 import {ApprovedSubnetsService} from '../approved-subnets/approved-subnets.service';
 import {AuthService} from '../auth/auth.service';
-import {MailModule} from '../../providers/mail/mail.module';
 import {GeolocationService} from '../../providers/geolocation/geolocation.service';
 
 import {PwnedModule} from '../../providers/pwned/pwned.module';
@@ -16,7 +15,6 @@ import {ApiKeysModule} from '../api-keys/api-keys.module';
 
 @Module({
   imports: [
-    MailModule,
     ConfigModule,
     TwilioModule,
     PwnedModule,

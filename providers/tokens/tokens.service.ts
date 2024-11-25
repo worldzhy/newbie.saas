@@ -31,7 +31,7 @@ export class TokensService {
     return sign(
       payload,
       this.configService.getOrThrow<string>(
-        'microservices.saas-starter.security.jwtSecret'
+        'microservices.saas.security.jwtSecret'
       ),
       {
         ...options,
@@ -52,7 +52,7 @@ export class TokensService {
       return verify(
         token,
         this.configService.getOrThrow<string>(
-          'microservices.saas-starter.security.jwtSecret'
+          'microservices.saas.security.jwtSecret'
         ),
         {...options, subject}
       ) as any as T;

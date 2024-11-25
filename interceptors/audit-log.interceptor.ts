@@ -10,7 +10,7 @@ import type {Prisma} from '@prisma/client';
 import {getClientIp} from 'request-ip';
 import {Observable} from 'rxjs';
 import {tap} from 'rxjs/operators';
-import * as UAParser from 'ua-parser-js';
+import {UAParser} from 'ua-parser-js';
 import {AUDIT_LOG_DATA} from '../modules/audit-logs/audit-log.constants';
 import {UserRequest} from '../modules/auth/auth.interface';
 import {WebhooksService} from '../modules/webhooks/webhooks.service';
@@ -43,7 +43,7 @@ export class AuditLogger implements NestInterceptor {
             const ip = getClientIp(request);
             const location = await this.geolocationService.getLocation(ip);
             const userAgent = request.get('user-agent');
-            const ua = new UAParser(userAgent);
+            const ua = UAParser(userAgent);
             for await (const rawEvent of auditLog) {
               let event = rawEvent;
               if (request.user.id && request.user.type === 'user')
@@ -59,11 +59,11 @@ export class AuditLogger implements NestInterceptor {
                 countryCode: location?.country?.iso_code,
                 userAgent,
                 browser:
-                  `${ua.getBrowser().name ?? ''} ${
-                    ua.getBrowser().version ?? ''
+                  `${ua.browser.name ?? ''} ${
+                    ua.browser.version ?? ''
                   }`.trim() || undefined,
                 operatingSystem:
-                  `${ua.getOS().name ?? ''} ${ua.getOS().version ?? ''}`
+                  `${ua.os.name ?? ''} ${ua.os.version ?? ''}`
                     .replace('Mac OS', 'macOS')
                     .trim() || undefined,
               };

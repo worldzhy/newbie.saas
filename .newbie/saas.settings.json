@@ -1,6 +1,6 @@
 {
   "config-service": {
-    "saas-starter": {
+    "saas": {
       "clientLoginUrl": "process.env.HOST_CLIENT_LOGIN_URL ?? 'http://localhost:3001/account/login'",
       "serverHost": "process.env.HOST_SERVER ?? 'http://localhost:3000'",
       "app": {
@@ -12,7 +12,7 @@
         "apiKeyLruSize": "int(process.env.CACHE_APIKEY_LRU_SIZE, 100)"
       },
       "domain": {
-        "verificationFile": "process.env.DOMAIN_VERIFICATION_FILE ?? 'saas-starter-verify.txt'"
+        "verificationFile": "process.env.DOMAIN_VERIFICATION_FILE ?? 'saas-verify.txt'"
       },
       "elasticsearch": {
         "node": "process.env.ELASTICSEARCH_NODE",
@@ -22,25 +22,6 @@
           "accessKeyId": "process.env.ELASTICSEARCH_AWS_ACCESS_KEY_ID ?? ''",
           "secretAccessKey": "process.env.ELASTICSEARCH_AWS_SECRET_ACCESS_KEY ?? ''",
           "region": "process.env.ELASTICSEARCH_AWS_REGION ?? ''"
-        }
-      },
-      "email": {
-        "name": "process.env.EMAIL_NAME ?? 'SaaS Starter'",
-        "from": "process.env.EMAIL_FROM ?? ''",
-        "retries": "int(process.env.EMAIL_FAIL_RETRIES, 3)",
-        "ses": {
-          "accessKeyId": "process.env.EMAIL_SES_ACCESS_KEY_ID ?? ''",
-          "secretAccessKey": "process.env.EMAIL_SES_SECRET_ACCESS_KEY ?? ''",
-          "region": "process.env.EMAIL_SES_REGION ?? ''"
-        },
-        "transport": {
-          "host": "process.env.EMAIL_HOST ?? ''",
-          "port": "int(process.env.EMAIL_PORT, 587)",
-          "secure": "bool(process.env.EMAIL_SECURE, false)",
-          "auth": {
-            "user": "process.env.EMAIL_USER ?? process.env.EMAIL_FROM ?? ''",
-            "pass": "process.env.EMAIL_PASSWORD ?? ''"
-          }
         }
       },
       "googleMaps": {
@@ -75,7 +56,7 @@
       },
       "security": {
         "saltRounds": "int(process.env.SECURITY_SALT_ROUNDS, 10)",
-        "jwtSecret": "process.env.SECURITY_JWT_SECRET ?? 'saas-starter'",
+        "jwtSecret": "process.env.SECURITY_JWT_SECRET ?? 'saas'",
         "totpWindowPast": "int(process.env.SECURITY_TOTP_WINDOW_PAST, 1)",
         "totpWindowFuture": "int(process.env.SECURITY_TOTP_WINDOW_FUTURE, 0)",
         "mfaTokenExpiry": "process.env.SECURITY_MFA_TOKEN_EXPIRY ?? '10m'",
@@ -94,7 +75,7 @@
       },
       "tracking": {
         "mode": "process.env.TRACKING_MODE ?? 'api-key'",
-        "index": "process.env.TRACKING_INDEX ?? 'saas-starter-logs'",
+        "index": "process.env.TRACKING_INDEX ?? 'saas-logs'",
         "deleteOldLogs": "bool(process.env.TRACKING_DELETE_OLD_LOGS, true)",
         "deleteOldLogsDays": "int(process.env.TRACKING_DELETE_OLD_LOGS_DAYS, 90)"
       },
@@ -125,17 +106,6 @@
     "ELASTICSEARCH_AWS_ACCESS_KEY_ID": "",
     "ELASTICSEARCH_AWS_SECRET_ACCESS_KEY": "",
     "ELASTICSEARCH_AWS_REGION": "",
-    "EMAIL_NAME": "",
-    "EMAIL_FROM": "",
-    "EMAIL_FAIL_RETRIES": "",
-    "EMAIL_SES_ACCESS_KEY_ID": "",
-    "EMAIL_SES_SECRET_ACCESS_KEY": "",
-    "EMAIL_SES_REGION": "",
-    "EMAIL_HOST": "",
-    "EMAIL_PORT": "",
-    "EMAIL_SECURE": "",
-    "EMAIL_USER": "",
-    "EMAIL_PASSWORD": "",
     "GOOGLE_MAPS_API_KEY": "",
     "GRAVATAR_ENABLED": "",
     "STRIPE_API_KEY": "",
@@ -178,7 +148,6 @@
     "@googlemaps/google-maps-services-js": "latest",
     "@nestjs/passport": "latest",
     "@nestjs/schedule": "^4.0.1",
-    "@staart/mustache-markdown": "latest",
     "aws-elasticsearch-connector": "latest",
     "aws-sdk": "latest",
     "circularbuffer": "latest",
@@ -189,8 +158,6 @@
     "ip-anonymize": "latest",
     "jsonwebtoken": "^9.0.2",
     "maxmind": "latest",
-    "mem": "^8.1.1",
-    "nodemailer": "latest",
     "normalize-email": "latest",
     "otplib": "latest",
     "passport-strategy": "latest",
@@ -206,7 +173,7 @@
     "ua-parser-js": "latest",
     "passport-google-oauth20": "^2.0.0"
   },
-  "assets": [
-    "microservices/saas-starter/providers/mail/templates/"
-  ]
+  "devDependencies": {
+    "@types/ua-parser-js": "^0.7.39"
+  }
 }

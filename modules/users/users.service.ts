@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
@@ -17,7 +16,6 @@ import {
 } from '../../errors/errors.constants';
 import {Files} from '../../helpers/interfaces';
 import {safeEmail} from '../../helpers/safe-email';
-import {MailService} from '../../providers/mail/mail.service';
 import {Expose} from '../../helpers/interfaces';
 import {expose} from '../../helpers/expose';
 import {PrismaService} from '@framework/prisma/prisma.service';
@@ -28,13 +26,14 @@ import {ApiKeysService} from '../api-keys/api-keys.service';
 import {AuthService} from '../auth/auth.service';
 import {PasswordUpdateInput} from './users.interface';
 import {generateUuid} from '@framework/utilities/random.util';
+import {EmailService} from '@microservices/notification/email/email.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private prisma: PrismaService,
     private auth: AuthService,
-    private email: MailService,
+    private email: EmailService,
     private configService: ConfigService,
     private tokensService: TokensService,
     private s3Service: S3Service,
@@ -96,12 +95,9 @@ export class UsersService {
         !!data.ignorePwnedPassword
       );
       if (user.prefersEmail) {
-        this.email.send({
-          to: `"${user.name}" <${user.prefersEmail.email}>`,
-          template: 'users/password-changed',
-          data: {
-            name: user.name,
-          },
+        this.email.sendWithTemplate({
+          toAddress: `"${user.name}" <${user.prefersEmail.email}>`,
+          template: {'users/password-changed': {userName: user.name}},
         });
       }
     }
@@ -136,12 +132,9 @@ export class UsersService {
     await this.prisma.session.deleteMany({where: {user: {id}}});
     if (deactivatedBy === id)
       if (user.prefersEmail) {
-        this.email.send({
-          to: `"${user.name}" <${user.prefersEmail.email}>`,
-          template: 'users/deactivated',
-          data: {
-            name: user.name,
-          },
+        this.email.sendWithTemplate({
+          toAddress: `"${user.name}" <${user.prefersEmail.email}>`,
+          template: {'users/deactivated': {userName: user.name}},
         });
       }
 
@@ -173,23 +166,24 @@ export class UsersService {
     if (user.id === userId) throw new NotFoundException(USER_NOT_FOUND);
     const minutes = parseInt(
       this.configService.get<string>(
-        'microservices.saas-starter.security.mergeUsersTokenExpiry'
+        'microservices.saas.security.mergeUsersTokenExpiry'
       ) ?? ''
     );
     if (user.prefersEmail) {
-      this.email.send({
-        to: `"${user.name}" <${user.prefersEmail.email}>`,
-        template: 'users/merge-request',
-        data: {
-          name: user.name,
-          minutes,
-          link: `${this.configService.get<string>(
-            'microservices.app.frontendUrl'
-          )}/auth/link/merge-accounts?token=${this.tokensService.signJwt(
-            MERGE_ACCOUNTS_TOKEN,
-            {baseUserId: userId, mergeUserId: user.id},
-            `${minutes}m`
-          )}`,
+      this.email.sendWithTemplate({
+        toAddress: `"${user.name}" <${user.prefersEmail.email}>`,
+        template: {
+          'users/merge-request': {
+            userName: user.name,
+            link: `${this.configService.get<string>(
+              'microservices.app.frontendUrl'
+            )}/auth/link/merge-accounts?token=${this.tokensService.signJwt(
+              MERGE_ACCOUNTS_TOKEN,
+              {baseUserId: userId, mergeUserId: user.id},
+              `${minutes}m`
+            )}`,
+            linkValidMinutes: minutes,
+          },
         },
       });
     }
@@ -204,13 +198,13 @@ export class UsersService {
     if (file.size > 25000000) throw new Error(FILE_TOO_LARGE);
 
     const region = this.configService.getOrThrow<string>(
-      'microservices.saas-starter.s3.region'
+      'microservices.saas.s3.region'
     );
     const bucket = this.configService.getOrThrow<string>(
-      'microservices.saas-starter.s3.profilePictureBucket'
+      'microservices.saas.s3.profilePictureBucket'
     );
     const cdnHostname = this.configService.getOrThrow<string>(
-      'microservices.saas-starter.s3.profilePictureCdnHostname'
+      'microservices.saas.s3.profilePictureCdnHostname'
     );
 
     const {Location} = await this.s3Service.upload(

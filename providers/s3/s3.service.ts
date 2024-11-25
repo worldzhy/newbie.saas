@@ -8,9 +8,7 @@ export class S3Service {
   private logger = new Logger(S3Service.name);
 
   constructor(private configService: ConfigService) {
-    const config = this.configService.getOrThrow(
-      'microservices.saas-starter.s3'
-    );
+    const config = this.configService.getOrThrow('microservices.saas.s3');
     if (config.accessKeyId)
       this.client = new S3({
         apiVersion: '2006-03-01',

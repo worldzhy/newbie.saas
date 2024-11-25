@@ -15,7 +15,6 @@ import {
   UNAUTHORIZED_RESOURCE,
 } from '../../errors/errors.constants';
 import {safeEmail} from '../../helpers/safe-email';
-import {MailService} from '../../providers/mail/mail.service';
 import {Expose} from '../../helpers/interfaces';
 import {expose} from '../../helpers/expose';
 import {PrismaService} from '@framework/prisma/prisma.service';
@@ -24,13 +23,14 @@ import {AuthService} from '../auth/auth.service';
 import {GroupsService} from '../groups/groups.service';
 import {CreateMembershipInput} from './memberships.interface';
 import {generateRandomString} from '@framework/utilities/random.util';
+import {EmailService} from '@microservices/notification/email/email.service';
 
 @Injectable()
 export class MembershipsService {
   constructor(
     private prisma: PrismaService,
     private auth: AuthService,
-    private email: MailService,
+    private email: EmailService,
     private configService: ConfigService,
     private groupsService: GroupsService,
     private apiKeyService: ApiKeysService
@@ -196,15 +196,16 @@ export class MembershipsService {
       },
       include: {group: {select: {name: true}}},
     });
-    this.email.send({
-      to: `"${user.name}" <${data.email}>`,
-      template: 'groups/invitation',
-      data: {
-        name: user.name,
-        group: result.group.name,
-        link: `${this.configService.get<string>(
-          'microservices.app.frontendUrl'
-        )}/groups/${groupId}`,
+    this.email.sendWithTemplate({
+      toAddress: `"${user.name}" <${data.email}>`,
+      template: {
+        'teams/invitation': {
+          userName: user.name,
+          teamName: result.group.name,
+          link: `${this.configService.get<string>(
+            'microservices.app.frontendUrl'
+          )}/groups/${groupId}`,
+        },
       },
     });
     return expose<Membership>(result);
