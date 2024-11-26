@@ -63,6 +63,7 @@ import {
 import {
   teamAdminScopes,
   teamMemberScopes,
+  teamMemberScopesCustomized,
   teamOwnerScopes,
   userScopes,
   userScopesCustomized,
@@ -908,6 +909,9 @@ export class AuthService {
       if (membership.role === 'MEMBER')
         scopes.push(
           ...Object.keys(teamMemberScopes).map(i =>
+            i.replace('{teamId}', id.toString())
+          ),
+          ...Object.keys(teamMemberScopesCustomized).map(i =>
             i.replace('{teamId}', id.toString())
           )
         );
