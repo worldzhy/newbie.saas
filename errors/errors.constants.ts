@@ -1,5 +1,5 @@
 export const USER_NOT_FOUND = '404001: User not found';
-export const GROUP_NOT_FOUND = '404002: Group not found';
+export const GROUP_NOT_FOUND = '404002: Team not found';
 export const SESSION_NOT_FOUND = '404003: Session not found';
 export const EMAIL_NOT_FOUND = '404004: Email not found';
 export const API_KEY_NOT_FOUND = '404005: API key not found';

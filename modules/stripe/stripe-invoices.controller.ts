@@ -5,28 +5,28 @@ import {OptionalIntPipe} from '@framework/pipes/optional-int.pipe';
 import {Scopes} from '../auth/scope.decorator';
 import {StripeService} from './stripe.service';
 
-@Controller('groups/:groupId/invoices')
+@Controller('teams/:teamId/invoices')
 export class StripeInvoicesController {
   constructor(private stripeService: StripeService) {}
 
-  /** Read invoices for a group */
+  /** Read invoices for a team */
   @Get()
-  @Scopes('group-{groupId}:read-invoice-*')
+  @Scopes('team-{teamId}:read-invoice-*')
   async getAll(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Query('take', OptionalIntPipe) take?: number,
     @Query('cursor', CursorPipe) cursor?: {id: string}
   ): Promise<Stripe.Invoice[]> {
-    return this.stripeService.getInvoices(groupId, {take, cursor});
+    return this.stripeService.getInvoices(teamId, {take, cursor});
   }
 
-  /** Read an invoice for a group */
+  /** Read an invoice for a team */
   @Get(':id')
-  @Scopes('group-{groupId}:read-invoice-{id}')
+  @Scopes('team-{teamId}:read-invoice-{id}')
   async get(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id') id: string
   ): Promise<Stripe.Invoice> {
-    return this.stripeService.getInvoice(groupId, id);
+    return this.stripeService.getInvoice(teamId, id);
   }
 }

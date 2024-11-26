@@ -78,7 +78,7 @@ export class TasksService {
     });
     for await (const domain of domains) {
       try {
-        await this.domainsService.verifyDomain(domain.groupId, domain.id);
+        await this.domainsService.verifyDomain(domain.teamId, domain.id);
       } catch (error) {}
     }
   }

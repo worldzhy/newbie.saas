@@ -14,50 +14,50 @@ import {AuditLog} from '../audit-logs/audit-log.decorator';
 import {Scopes} from '../auth/scope.decorator';
 import {StripeService} from './stripe.service';
 
-@Controller('groups/:groupId/sources')
+@Controller('teams/:teamId/sources')
 export class StripeSourcesController {
   constructor(private stripeService: StripeService) {}
 
-  /** Create a source for a group */
+  /** Create a source for a team */
   @Post()
   @AuditLog('write-source')
-  @Scopes('group-{groupId}:write-source-*')
+  @Scopes('team-{teamId}:write-source-*')
   async create(
-    @Param('groupId', ParseIntPipe) groupId: number
+    @Param('teamId', ParseIntPipe) teamId: number
   ): Promise<Stripe.Checkout.Session> {
-    return this.stripeService.createSession(groupId, 'setup');
+    return this.stripeService.createSession(teamId, 'setup');
   }
 
-  /** Read sources for a group */
+  /** Read sources for a team */
   @Get()
-  @Scopes('group-{groupId}:read-source-*')
+  @Scopes('team-{teamId}:read-source-*')
   async getAll(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Query('take', OptionalIntPipe) take?: number,
     @Query('cursor', CursorPipe) cursor?: {id: string}
   ): Promise<Stripe.CustomerSource[]> {
-    return this.stripeService.getSources(groupId, {take, cursor});
+    return this.stripeService.getSources(teamId, {take, cursor});
   }
 
-  /** Read a source for a group */
+  /** Read a source for a team */
   @Get(':id')
-  @Scopes('group-{groupId}:read-source-{id}')
+  @Scopes('team-{teamId}:read-source-{id}')
   async get(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id') id: string
   ): Promise<Stripe.Source> {
-    return this.stripeService.getSource(groupId, id);
+    return this.stripeService.getSource(teamId, id);
   }
 
-  /** Delete a source for a group */
+  /** Delete a source for a team */
   @Delete(':id')
   @AuditLog('delete-source')
-  @Scopes('group-{groupId}:delete-source-{id}')
+  @Scopes('team-{teamId}:delete-source-{id}')
   async remove(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id') id: string
   ): Promise<{success: true}> {
-    await this.stripeService.deleteSource(groupId, id);
+    await this.stripeService.deleteSource(teamId, id);
     return {success: true};
   }
 }

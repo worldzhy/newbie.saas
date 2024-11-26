@@ -17,11 +17,15 @@ export class ScopesGuard implements CanActivate {
     for (const userScope of user.scopes) {
       for (let scope of scopes) {
         // user scope
-        scope = scope.replace(`{userId}`, user.userId.toString());
-        // group scope
-        if (request.params && request.params.groupId) {
-          scope = scope.replace(`{groupId}`, request.params.groupId);
+        if (request.params && request.params.userId) {
+          scope = scope.replace(`{userId}`, request.params.userId);
         }
+
+        // team scope
+        if (request.params && request.params.teamId) {
+          scope = scope.replace(`{teamId}`, request.params.teamId);
+        }
+
         authorized = authorized || minimatch(scope, userScope);
         if (authorized) return true;
       }

@@ -19,69 +19,69 @@ import {
 } from './stripe.dto';
 import {StripeService} from './stripe.service';
 
-@Controller('groups/:groupId/billing')
+@Controller('teams/:teamId/billing')
 export class StripeBillingController {
   constructor(private stripeService: StripeService) {}
 
-  /** Create a billing account for a group */
+  /** Create a billing account for a team */
   @Post()
   @AuditLog('create-billing')
-  @Scopes('group-{groupId}:write-billing')
+  @Scopes('team-{teamId}:write-billing')
   async createBillingAccount(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Body() data: CreateBillingDto
   ): Promise<Stripe.Customer> {
-    return this.stripeService.createCustomer(groupId, data);
+    return this.stripeService.createCustomer(teamId, data);
   }
 
-  /** Read billing for a group */
+  /** Read billing for a team */
   @Get()
-  @Scopes('group-{groupId}:read-billing')
+  @Scopes('team-{teamId}:read-billing')
   async getBillingAccount(
-    @Param('groupId', ParseIntPipe) groupId: number
+    @Param('teamId', ParseIntPipe) teamId: number
   ): Promise<Stripe.Customer> {
-    return this.stripeService.getCustomer(groupId);
+    return this.stripeService.getCustomer(teamId);
   }
 
-  /** Update billing for a group */
+  /** Update billing for a team */
   @Patch()
   @AuditLog('update-billing')
-  @Scopes('group-{groupId}:write-billing')
+  @Scopes('team-{teamId}:write-billing')
   async updateBillingAccount(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Body() data: UpdateBillingDto
   ): Promise<Stripe.Customer> {
-    return this.stripeService.updateCustomer(groupId, data);
+    return this.stripeService.updateCustomer(teamId, data);
   }
 
-  /** Replace billing for a group */
+  /** Replace billing for a team */
   @Put()
   @AuditLog('update-billing')
-  @Scopes('group-{groupId}:write-billing')
+  @Scopes('team-{teamId}:write-billing')
   async replaceBillingAccount(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Body() data: ReplaceBillingDto
   ): Promise<Stripe.Customer> {
-    return this.stripeService.updateCustomer(groupId, data);
+    return this.stripeService.updateCustomer(teamId, data);
   }
 
-  /** Delete billing for a group */
+  /** Delete billing for a team */
   @Delete()
   @AuditLog('delete-billing')
-  @Scopes('group-{groupId}:delete-billing')
+  @Scopes('team-{teamId}:delete-billing')
   async deleteBillingAccount(
-    @Param('groupId', ParseIntPipe) groupId: number
+    @Param('teamId', ParseIntPipe) teamId: number
   ): Promise<Stripe.DeletedCustomer> {
-    return this.stripeService.deleteCustomer(groupId);
+    return this.stripeService.deleteCustomer(teamId);
   }
 
-  /** Get the billing portal link for a group */
+  /** Get the billing portal link for a team */
   @Get('link')
   @AuditLog('billing-portal')
-  @Scopes('group-{groupId}:write-billing')
+  @Scopes('team-{teamId}:write-billing')
   async getSession(
-    @Param('groupId', ParseIntPipe) groupId: number
+    @Param('teamId', ParseIntPipe) teamId: number
   ): Promise<Stripe.Response<Stripe.BillingPortal.Session>> {
-    return this.stripeService.getBillingPortalLink(groupId);
+    return this.stripeService.getBillingPortalLink(teamId);
   }
 }

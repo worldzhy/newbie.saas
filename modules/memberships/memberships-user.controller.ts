@@ -8,49 +8,54 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiResponse} from '@nestjs/swagger';
+import {ApiTags, ApiResponse} from '@nestjs/swagger';
 import {Membership, Prisma} from '@prisma/client';
-import {CursorPipe} from '@framework/pipes/cursor.pipe';
-import {OptionalIntPipe} from '@framework/pipes/optional-int.pipe';
-import {OrderByPipe} from '@framework/pipes/order-by.pipe';
-import {WherePipe} from '@framework/pipes/where.pipe';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {Expose} from '../../helpers/interfaces';
+import {expose} from '../../helpers/expose';
 import {Scopes} from '../auth/scope.decorator';
-import {CreateGroupDto} from '../groups/groups.dto';
+import {CreateTeamDto} from '../teams/teams.dto';
 import {MembershipsService} from './memberships.service';
+import {MembershipsListReqDto, MembershipsListResDto} from './memberships.dto';
 
 @ApiTags('Users Memberships')
 @Controller('users/:userId/memberships')
 export class UserMembershipController {
-  constructor(private membershipsService: MembershipsService) {}
+  constructor(
+    private membershipsService: MembershipsService,
+    private prisma: PrismaService
+  ) {}
 
   @Post()
   @Scopes('user-{userId}:write-membership-*')
   async create(
     @Param('userId', ParseIntPipe) userId: number,
-    @Body() data: CreateGroupDto
+    @Body() data: CreateTeamDto
   ): Promise<Expose<Membership>> {
     return this.membershipsService.createUserMembership(userId, data);
   }
 
   /** Get memberships for a user */
   @Get()
+  @ApiResponse({type: MembershipsListResDto})
   @Scopes('user-{userId}:read-membership-*')
   async getAll(
     @Param('userId', ParseIntPipe) userId: number,
-    @Query('skip', OptionalIntPipe) skip?: number,
-    @Query('take', OptionalIntPipe) take?: number,
-    @Query('cursor', CursorPipe) cursor?: Prisma.MembershipWhereUniqueInput,
-    @Query('where', WherePipe) where?: Record<string, number | string>,
-    @Query('orderBy', OrderByPipe) orderBy?: Record<string, 'asc' | 'desc'>
-  ): Promise<Expose<Membership>[]> {
-    return this.membershipsService.getMemberships({
-      skip,
-      take,
-      orderBy,
-      cursor,
-      where: {...where, user: {id: userId}},
+    @Query() query: MembershipsListReqDto
+  ): Promise<MembershipsListResDto> {
+    const {page, pageSize} = query;
+    const result = await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Membership,
+      pagination: {page, pageSize},
+      findManyArgs: {
+        where: {userId},
+        orderBy: {id: 'desc'},
+        include: {team: true, user: true},
+      },
     });
+
+    result.records = result.records.map(user => expose<Membership>(user));
+    return result;
   }
 
   /** Get a membership for a user */

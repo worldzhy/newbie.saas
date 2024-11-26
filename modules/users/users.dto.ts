@@ -1,4 +1,5 @@
-import {MfaMethod} from '@prisma/client';
+import {MfaMethod, User} from '@prisma/client';
+import {ApiProperty} from '@nestjs/swagger';
 import {
   IsBoolean,
   IsEnum,
@@ -10,6 +11,30 @@ import {
   Length,
   MinLength,
 } from 'class-validator';
+
+import {Expose} from '../../helpers/interfaces';
+import {expose} from '../../helpers/expose';
+import {
+  CommonPaginationReqDto,
+  CommonPaginationResDto,
+} from '@framework/common.dto';
+
+export class UsersListReqDto extends CommonPaginationReqDto {
+
+}
+
+export class UsersListResDto {
+  @ApiProperty({
+    type: expose<User>,
+    isArray: true,
+  })
+  records: Expose<User>[];
+
+  @ApiProperty({
+    type: CommonPaginationResDto,
+  })
+  pagination: CommonPaginationResDto;
+}
 
 export class UpdateUserDto {
   @IsBoolean()

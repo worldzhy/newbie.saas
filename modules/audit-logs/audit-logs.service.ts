@@ -24,9 +24,9 @@ export class AuditLogsService {
         cursor,
         where,
         orderBy,
-        include: {group: true, user: true},
+        include: {team: true, user: true},
       });
-      return AuditLog.map(group => expose<AuditLog>(group));
+      return AuditLog.map(team => expose<AuditLog>(team));
     } catch (error) {
       return [];
     }

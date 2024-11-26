@@ -35,8 +35,8 @@ export class DomainsService {
   ) {}
 
   async createDomain(
-    groupId: number,
-    data: Omit<Omit<Prisma.DomainCreateInput, 'group'>, 'verificationCode'>
+    teamId: number,
+    data: Omit<Omit<Prisma.DomainCreateInput, 'team'>, 'verificationCode'>
   ): Promise<Domain> {
     try {
       const fullUrl = new URL(data.domain);
@@ -49,8 +49,8 @@ export class DomainsService {
     )
       throw new BadRequestException(INVALID_DOMAIN);
     const verificationCode = await generateRandomString();
-    const currentProfilePicture = await this.prisma.group.findUniqueOrThrow({
-      where: {id: groupId},
+    const currentProfilePicture = await this.prisma.team.findUniqueOrThrow({
+      where: {id: teamId},
       select: {profilePictureUrl: true},
     });
     const parsedProfilePicture = new URL(
@@ -65,8 +65,8 @@ export class DomainsService {
           }
         );
         if (img.data.byteLength > 1)
-          await this.prisma.group.update({
-            where: {id: groupId},
+          await this.prisma.team.update({
+            where: {id: teamId},
             data: {
               profilePictureUrl: `https://logo.clearbit.com/${data.domain}`,
             },
@@ -77,13 +77,13 @@ export class DomainsService {
       data: {
         ...data,
         verificationCode,
-        group: {connect: {id: groupId}},
+        team: {connect: {id: teamId}},
       },
     });
   }
 
   async getDomains(
-    groupId: number,
+    teamId: number,
     params: {
       skip?: number;
       take?: number;
@@ -98,27 +98,27 @@ export class DomainsService {
         skip,
         take,
         cursor,
-        where: {...where, group: {id: groupId}},
+        where: {...where, team: {id: teamId}},
         orderBy,
       });
-      return domains.map(group => expose<Domain>(group));
+      return domains.map(team => expose<Domain>(team));
     } catch (error) {
       return [];
     }
   }
 
-  async getDomain(groupId: number, id: number): Promise<Expose<Domain>> {
+  async getDomain(teamId: number, id: number): Promise<Expose<Domain>> {
     const domain = await this.prisma.domain.findUnique({
       where: {id},
     });
     if (!domain) throw new NotFoundException(DOMAIN_NOT_FOUND);
-    if (domain.groupId !== groupId)
+    if (domain.teamId !== teamId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
     return expose<Domain>(domain);
   }
 
   async verifyDomain(
-    groupId: number,
+    teamId: number,
     id: number,
     method?: DomainVerificationMethods
   ): Promise<Expose<Domain>> {
@@ -126,7 +126,7 @@ export class DomainsService {
       where: {id},
     });
     if (!domain) throw new NotFoundException(DOMAIN_NOT_FOUND);
-    if (domain.groupId !== groupId)
+    if (domain.teamId !== teamId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
 
     if (method === DOMAIN_VERIFICATION_TXT || !method) {
@@ -160,12 +160,12 @@ export class DomainsService {
     return domain;
   }
 
-  async deleteDomain(groupId: number, id: number): Promise<Expose<Domain>> {
+  async deleteDomain(teamId: number, id: number): Promise<Expose<Domain>> {
     const testDomain = await this.prisma.domain.findUnique({
       where: {id},
     });
     if (!testDomain) throw new NotFoundException(DOMAIN_NOT_FOUND);
-    if (testDomain.groupId !== groupId)
+    if (testDomain.teamId !== teamId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
     const domain = await this.prisma.domain.delete({
       where: {id},

@@ -2,7 +2,7 @@
 // !           [Microservice] SaaS models                 //
 // ! ------------------------------------------------------------ //
 // * User                                                         //
-// * Group                                                        //
+// * Team                                                        //
 // * Email                                                        //
 // * ApiKey                                                       //
 // * ApprovedSubnet                                               //
@@ -53,27 +53,23 @@ model User {
     @@schema("microservice/saas")
 }
 
-model Group {
-    autoJoinDomain    Boolean      @default(false)
-    createdAt         DateTime     @default(now())
-    forceTwoFactor    Boolean      @default(false)
-    id                Int          @id
-    ipRestrictions    String?
-    name              String
-    onlyAllowDomain   Boolean      @default(false)
-    profilePictureUrl String       @default("https://unavatar.now.sh/fallback.png")
-    attributes        Json?
-    updatedAt         DateTime     @updatedAt
-    parentId          Int?
-    parent            Group?       @relation("groupSubgroups", fields: [parentId], references: [id])
-    apiKeys           ApiKey[]     @relation("groupApiKey")
-    auditLogs         AuditLog[]   @relation("groupAuditLog")
-    domains           Domain[]     @relation("groupDomain")
-    subgroups         Group[]      @relation("groupSubgroups")
-    memberships       Membership[] @relation("groupMembership")
-    webhooks          Webhook[]    @relation("groupWebhook")
+model Team {
+    autoJoinDomain     Boolean             @default(false)
+    createdAt          DateTime            @default(now())
+    forceTwoFactor     Boolean             @default(false)
+    id                 Int                 @id
+    ipRestrictions     String?
+    name               String
+    onlyAllowDomain    Boolean             @default(false)
+    profilePictureUrl  String              @default("https://unavatar.now.sh/fallback.png")
+    attributes         Json?
+    updatedAt          DateTime            @updatedAt
+    apiKeys            ApiKey[]            @relation("teamApiKey")
+    auditLogs          AuditLog[]          @relation("teamAuditLog")
+    domains            Domain[]            @relation("teamDomain")
+    memberships        Membership[]        @relation("teamMembership")
+    webhooks           Webhook[]           @relation("teamWebhook")
 
-    @@index([parentId])
     @@schema("microservice/saas")
 }
 
@@ -99,16 +95,16 @@ model ApiKey {
     ipRestrictions       Json?
     apiKey               String     @unique
     name                 String?
-    groupId              Int?
+    teamId               Int?
     referrerRestrictions Json?
     scopes               String[]
     updatedAt            DateTime   @updatedAt
     userId               Int?
     auditLogs            AuditLog[] @relation("apiKeyAuditLog")
-    group                Group?     @relation("groupApiKey", fields: [groupId], references: [id])
+    team                 Team?      @relation("teamApiKey", fields: [teamId], references: [id])
     user                 User?      @relation("userApiKey", fields: [userId], references: [id])
 
-    @@index([groupId])
+    @@index([teamId])
     @@index([userId])
     @@schema("microservice/saas")
 }
@@ -163,12 +159,12 @@ model Domain {
     domain           String
     id               Int      @id @default(autoincrement())
     isVerified       Boolean  @default(false)
-    groupId          Int
+    teamId           Int
     updatedAt        DateTime @updatedAt
     verificationCode String
-    group            Group    @relation("groupDomain", fields: [groupId], references: [id])
+    team             Team     @relation("teamDomain", fields: [teamId], references: [id])
 
-    @@index([groupId])
+    @@index([teamId])
     @@schema("microservice/saas")
 }
 
@@ -188,14 +184,14 @@ model Identity {
 model Membership {
     createdAt DateTime       @default(now())
     id        Int            @id @default(autoincrement())
-    groupId   Int
+    teamId    Int
     role      MembershipRole @default(MEMBER)
     updatedAt DateTime       @updatedAt
     userId    Int
-    group     Group          @relation("groupMembership", fields: [groupId], references: [id])
+    team      Team           @relation("teamMembership", fields: [teamId], references: [id])
     user      User           @relation("userMembership", fields: [userId], references: [id])
 
-    @@index([groupId])
+    @@index([teamId])
     @@index([userId])
     @@schema("microservice/saas")
 }
@@ -227,13 +223,13 @@ model Webhook {
     id          Int       @id @default(autoincrement())
     isActive    Boolean   @default(false)
     lastFiredAt DateTime?
-    groupId     Int
+    teamId      Int
     secret      String?
     updatedAt   DateTime  @updatedAt
     url         String
-    group       Group     @relation("groupWebhook", fields: [groupId], references: [id])
+    team        Team      @relation("teamWebhook", fields: [teamId], references: [id])
 
-    @@index([groupId])
+    @@index([teamId])
     @@schema("microservice/saas")
 }
 
@@ -242,7 +238,7 @@ model AuditLog {
     event           String
     rawEvent        String
     id              Int      @id @default(autoincrement())
-    groupId         Int?
+    teamId          Int?
     updatedAt       DateTime @updatedAt
     userId          Int?
     apiKeyId        Int?
@@ -254,12 +250,12 @@ model AuditLog {
     countryCode     String?
     browser         String?
     operatingSystem String?
-    group           Group?   @relation("groupAuditLog", fields: [groupId], references: [id])
+    team            Team?    @relation("teamAuditLog", fields: [teamId], references: [id])
     user            User?    @relation("userAuditLog", fields: [userId], references: [id])
     apiKey          ApiKey?  @relation("apiKeyAuditLog", fields: [apiKeyId], references: [id])
 
     @@index([apiKeyId])
-    @@index([groupId])
+    @@index([teamId])
     @@index([userId])
     @@schema("microservice/saas")
 }

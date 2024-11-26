@@ -12,7 +12,7 @@ import {SaasAuthGuard} from './modules/auth/guards/auth.guard';
 import {GoogleAuthGuard} from './modules/auth/guards/google-auth.guard';
 import {DomainsModule} from './modules/domains/domains.module';
 import {EmailsModule} from './modules/emails/emails.module';
-import {GroupsModule} from './modules/groups/groups.module';
+import {TeamsModule} from './modules/teams/teams.module';
 import {MembershipsModule} from './modules/memberships/memberships.module';
 import {MultiFactorAuthenticationModule} from './modules/multi-factor-authentication/multi-factor-authentication.module';
 import {SessionsModule} from './modules/sessions/sessions.module';
@@ -35,7 +35,7 @@ import {MetricsModule} from './modules/metrics/metrics.module';
     AuthModule,
     SessionsModule,
     EmailsModule,
-    GroupsModule,
+    TeamsModule,
     MultiFactorAuthenticationModule,
     ApiKeysModule,
     ApprovedSubnetsModule,

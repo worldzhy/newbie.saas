@@ -9,12 +9,16 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
+import {ApiTags} from '@nestjs/swagger';
 import {ApiKey, Prisma} from '@prisma/client';
 import {CursorPipe} from '@framework/pipes/cursor.pipe';
 import {OptionalIntPipe} from '@framework/pipes/optional-int.pipe';
 import {OrderByPipe} from '@framework/pipes/order-by.pipe';
 import {WherePipe} from '@framework/pipes/where.pipe';
+import {SaasAuthGuard} from '@/microservices/saas/modules/auth/guards/auth.guard';
 import {Expose} from '../../helpers/interfaces';
 import {AuditLog} from '../audit-logs/audit-log.decorator';
 import {Scopes} from '../auth/scope.decorator';
@@ -25,33 +29,37 @@ import {
 } from './api-keys.dto';
 import {ApiKeysService} from './api-keys.service';
 
-@Controller('groups/:groupId/api-keys')
-export class ApiKeyGroupController {
+@ApiTags('Teams Api-keys')
+@Controller('teams/:teamId/api-keys')
+export class ApiKeyTeamController {
   constructor(private apiKeysService: ApiKeysService) {}
 
-  /** Create an API key for a group */
+  /** Create an API key for a team */
   @Post()
   @AuditLog('create-api-key')
-  @Scopes('group-{groupId}:write-api-key-*')
+  @UseGuards(SaasAuthGuard)
+  @Scopes('team-{teamId}:write-api-key-*')
   async create(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Req() req,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Body() data: CreateApiKeyDto
   ): Promise<Expose<ApiKey>> {
-    return this.apiKeysService.createApiKeyForGroup(groupId, data);
+    const {userId} = req.user;
+    return this.apiKeysService.createApiKeyForTeam(teamId, userId, data);
   }
 
-  /** Get API keys for a group */
+  /** Get API keys for a team */
   @Get()
-  @Scopes('group-{groupId}:read-api-key-*')
+  @Scopes('team-{teamId}:read-api-key-*')
   async getAll(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Query('skip', OptionalIntPipe) skip?: number,
     @Query('take', OptionalIntPipe) take?: number,
     @Query('cursor', CursorPipe) cursor?: Prisma.ApiKeyWhereUniqueInput,
     @Query('where', WherePipe) where?: Record<string, number | string>,
     @Query('orderBy', OrderByPipe) orderBy?: Record<string, 'asc' | 'desc'>
   ): Promise<Expose<ApiKey>[]> {
-    return this.apiKeysService.getApiKeysForGroup(groupId, {
+    return this.apiKeysService.getApiKeysForTeam(teamId, {
       skip,
       take,
       orderBy,
@@ -60,71 +68,71 @@ export class ApiKeyGroupController {
     });
   }
 
-  /** Get API key scopes for a group */
+  /** Get API key scopes for a team */
   @Get('scopes')
-  @Scopes('group-{groupId}:write-api-key-*')
+  @Scopes('team-{teamId}:write-api-key-*')
   async scopes(
-    @Param('groupId', ParseIntPipe) groupId: number
+    @Param('teamId', ParseIntPipe) teamId: number
   ): Promise<Record<string, string>> {
-    return this.apiKeysService.getApiKeyScopesForGroup(groupId);
+    return this.apiKeysService.getApiKeyScopesForTeamCustomized(teamId);
   }
 
   /** Get an API key */
   @Get(':id')
-  @Scopes('group-{groupId}:read-api-key-{id}')
+  @Scopes('team-{teamId}:read-api-key-{id}')
   async get(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id', ParseIntPipe) id: number
   ): Promise<Expose<ApiKey>> {
-    return this.apiKeysService.getApiKeyForGroup(groupId, id);
+    return this.apiKeysService.getApiKeyForTeam(teamId, id);
   }
 
   /** Update an API key */
   @Patch(':id')
   @AuditLog('update-api-key')
-  @Scopes('group-{groupId}:write-api-key-{id}')
+  @Scopes('team-{teamId}:write-api-key-{id}')
   async update(
     @Body() data: UpdateApiKeyDto,
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id', ParseIntPipe) id: number
   ): Promise<Expose<ApiKey>> {
-    return this.apiKeysService.updateApiKeyForGroup(groupId, id, data);
+    return this.apiKeysService.updateApiKeyForTeam(teamId, id, data);
   }
 
   /** Replace an API key */
   @Put(':id')
   @AuditLog('update-api-key')
-  @Scopes('group-{groupId}:write-api-key-{id}')
+  @Scopes('team-{teamId}:write-api-key-{id}')
   async replace(
     @Body() data: ReplaceApiKeyDto,
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id', ParseIntPipe) id: number
   ): Promise<Expose<ApiKey>> {
-    return this.apiKeysService.updateApiKeyForGroup(groupId, id, data);
+    return this.apiKeysService.updateApiKeyForTeam(teamId, id, data);
   }
 
   /** Delete an API key */
   @Delete(':id')
   @AuditLog('delete-api-key')
-  @Scopes('group-{groupId}:delete-api-key-{id}')
+  @Scopes('team-{teamId}:delete-api-key-{id}')
   async remove(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id', ParseIntPipe) id: number
   ): Promise<Expose<ApiKey>> {
-    return this.apiKeysService.deleteApiKeyForGroup(groupId, id);
+    return this.apiKeysService.deleteApiKeyForTeam(teamId, id);
   }
 
   /** Get logs for an API key */
   @Get(':id/logs')
-  @Scopes('group-{groupId}:read-api-key-logs-*')
+  @Scopes('team-{teamId}:read-api-key-logs-*')
   async getLogs(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id', ParseIntPipe) id: number,
     @Query('take', OptionalIntPipe) take?: number,
     @Query('cursor', CursorPipe) cursor?: Record<string, number | string>,
     @Query('where', WherePipe) where?: Record<string, number | string>
   ): Promise<Record<string, any>[]> {
-    return this.apiKeysService.getApiKeyLogsForGroup(groupId, id, {
+    return this.apiKeysService.getApiKeyLogsForTeam(teamId, id, {
       take,
       cursor,
       where,

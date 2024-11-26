@@ -6,21 +6,22 @@ import {
 import {ConfigService} from '@nestjs/config';
 import {Prisma} from '@prisma/client';
 import {ApiKey} from '@prisma/client';
-import * as QuickLRU from 'quick-lru';
 import {
   API_KEY_NOT_FOUND,
   UNAUTHORIZED_RESOURCE,
 } from '../../errors/errors.constants';
 import {
-  groupOwnerScopes,
+  teamOwnerScopes,
   userScopes,
-  applicationScopes,
+  userScopesCustomized,
+  teamMemberScopesCustomized,
 } from '../../helpers/scopes';
 import {ElasticsearchService} from '../../providers/elasticsearch/elasticsearch.service';
 import {Expose} from '../../helpers/interfaces';
 import {expose} from '../../helpers/expose';
 import {PrismaService} from '@framework/prisma/prisma.service';
 import {generateRandomString} from '@framework/utilities/random.util';
+import {LRUCache} from 'lru-cache';
 
 @Injectable()
 export class ApiKeysService {
@@ -31,23 +32,30 @@ export class ApiKeysService {
     private configService: ConfigService,
     private elasticsearch: ElasticsearchService
   ) {
-    this.lru = new QuickLRU<string, ApiKey>({
+    this.lru = new LRUCache({
       maxSize: this.configService.getOrThrow<number>(
         'microservices.saas.cache.apiKeyLruSize'
       ),
     });
   }
 
-  async createApiKeyForGroup(
-    groupId: number,
-    data: Omit<Omit<Prisma.ApiKeyCreateInput, 'apiKey'>, 'group'>
+  async createApiKeyForTeam(
+    teamId: number,
+    userId: number,
+    data: Omit<Omit<Prisma.ApiKeyCreateInput, 'apiKey'>, 'team'>
   ): Promise<ApiKey> {
     const apiKey = await generateRandomString();
-    data.scopes = await this.cleanScopesForGroup(groupId, data.scopes);
+    data.scopes = await this.cleanScopesForTeam(teamId, data.scopes);
     return this.prisma.apiKey.create({
-      data: {...data, apiKey, group: {connect: {id: groupId}}},
+      data: {
+        ...data,
+        apiKey,
+        team: {connect: {id: teamId}},
+        user: {connect: {id: userId}},
+      },
     });
   }
+
   async createApiKeyForUser(
     userId: number,
     data: Omit<Omit<Prisma.ApiKeyCreateInput, 'apiKey'>, 'user'>
@@ -59,8 +67,8 @@ export class ApiKeysService {
     });
   }
 
-  async getApiKeysForGroup(
-    groupId: number,
+  async getApiKeysForTeam(
+    teamId: number,
     params: {
       skip?: number;
       take?: number;
@@ -75,14 +83,15 @@ export class ApiKeysService {
         skip,
         take,
         cursor,
-        where: {...where, group: {id: groupId}},
+        where: {...where, team: {id: teamId}},
         orderBy,
       });
-      return apiKey.map(group => expose<ApiKey>(group));
+      return apiKey.map(team => expose<ApiKey>(team));
     } catch (error) {
       return [];
     }
   }
+
   async getApiKeysForUser(
     userId: number,
     params: {
@@ -99,7 +108,7 @@ export class ApiKeysService {
         skip,
         take,
         cursor,
-        where: {...where, user: {id: userId}},
+        where: {...where, user: {id: userId}, teamId: null},
         orderBy,
       });
       return apiKey.map(user => expose<ApiKey>(user));
@@ -108,18 +117,16 @@ export class ApiKeysService {
     }
   }
 
-  async getApiKeyForGroup(
-    groupId: number,
-    id: number
-  ): Promise<Expose<ApiKey>> {
+  async getApiKeyForTeam(teamId: number, id: number): Promise<Expose<ApiKey>> {
     const apiKey = await this.prisma.apiKey.findUnique({
       where: {id},
     });
     if (!apiKey) throw new NotFoundException(API_KEY_NOT_FOUND);
-    if (apiKey.groupId !== groupId)
+    if (apiKey.teamId !== teamId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
     return expose<ApiKey>(apiKey);
   }
+
   async getApiKeyForUser(userId: number, id: number): Promise<Expose<ApiKey>> {
     const apiKey = await this.prisma.apiKey.findUnique({
       where: {id},
@@ -140,8 +147,8 @@ export class ApiKeysService {
     return expose<ApiKey>(apiKey);
   }
 
-  async updateApiKeyForGroup(
-    groupId: number,
+  async updateApiKeyForTeam(
+    teamId: number,
     id: number,
     data: Prisma.ApiKeyUpdateInput
   ): Promise<Expose<ApiKey>> {
@@ -149,9 +156,9 @@ export class ApiKeysService {
       where: {id},
     });
     if (!testApiKey) throw new NotFoundException(API_KEY_NOT_FOUND);
-    if (testApiKey.groupId !== groupId)
+    if (testApiKey.teamId !== teamId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
-    data.scopes = await this.cleanScopesForGroup(groupId, data.scopes);
+    data.scopes = await this.cleanScopesForTeam(teamId, data.scopes);
     const apiKey = await this.prisma.apiKey.update({
       where: {id},
       data,
@@ -159,6 +166,7 @@ export class ApiKeysService {
     this.lru.delete(testApiKey.apiKey);
     return expose<ApiKey>(apiKey);
   }
+
   async updateApiKeyForUser(
     userId: number,
     id: number,
@@ -179,8 +187,8 @@ export class ApiKeysService {
     return expose<ApiKey>(apiKey);
   }
 
-  async replaceApiKeyForGroup(
-    groupId: number,
+  async replaceApiKeyForTeam(
+    teamId: number,
     id: number,
     data: Prisma.ApiKeyCreateInput
   ): Promise<Expose<ApiKey>> {
@@ -188,9 +196,9 @@ export class ApiKeysService {
       where: {id},
     });
     if (!testApiKey) throw new NotFoundException(API_KEY_NOT_FOUND);
-    if (testApiKey.groupId !== groupId)
+    if (testApiKey.teamId !== teamId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
-    data.scopes = await this.cleanScopesForGroup(groupId, data.scopes);
+    data.scopes = await this.cleanScopesForTeam(teamId, data.scopes);
     const apiKey = await this.prisma.apiKey.update({
       where: {id},
       data,
@@ -218,15 +226,15 @@ export class ApiKeysService {
     return expose<ApiKey>(apiKey);
   }
 
-  async deleteApiKeyForGroup(
-    groupId: number,
+  async deleteApiKeyForTeam(
+    teamId: number,
     id: number
   ): Promise<Expose<ApiKey>> {
     const testApiKey = await this.prisma.apiKey.findUnique({
       where: {id},
     });
     if (!testApiKey) throw new NotFoundException(API_KEY_NOT_FOUND);
-    if (testApiKey.groupId !== groupId)
+    if (testApiKey.teamId !== teamId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
     const apiKey = await this.prisma.apiKey.delete({
       where: {id},
@@ -251,8 +259,8 @@ export class ApiKeysService {
     return expose<ApiKey>(apiKey);
   }
 
-  async getApiKeyLogsForGroup(
-    groupId: number,
+  async getApiKeyLogsForTeam(
+    teamId: number,
     id: number,
     params: {
       take?: number;
@@ -264,7 +272,7 @@ export class ApiKeysService {
       where: {id},
     });
     if (!testApiKey) throw new NotFoundException(API_KEY_NOT_FOUND);
-    if (testApiKey.groupId !== groupId)
+    if (testApiKey.teamId !== teamId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
     return this.getApiLogsFromKey(testApiKey.apiKey, params);
   }
@@ -289,7 +297,7 @@ export class ApiKeysService {
   /**
    * Remove any unauthorized scopes in an API key for a user
    * This should run when a user's permissions have changed, for example
-   * if they are removed from a group; this will remove any API scopes
+   * if they are removed from a team; this will remove any API scopes
    * they don't have access to anymore from that API key
    */
   async removeUnauthorizedScopesForUser(userId: number): Promise<void> {
@@ -335,11 +343,7 @@ export class ApiKeysService {
         query: {
           bool: {
             must: [
-              {
-                match: {
-                  authorization: apiKey,
-                },
-              },
+              {match: {authorization: apiKey}},
               {
                 range: {
                   date: {
@@ -355,11 +359,7 @@ export class ApiKeysService {
             ],
           },
         },
-        sort: [
-          {
-            date: {order: 'desc'},
-          },
-        ],
+        sort: [{date: {order: 'desc'}}],
         size: params.take ?? 100,
       },
     });
@@ -380,8 +380,8 @@ export class ApiKeysService {
     return [];
   }
 
-  private cleanScopesForGroup(
-    groupId: number,
+  private async cleanScopesForTeam(
+    teamId: number,
     scopes:
       | string[]
       | undefined
@@ -389,14 +389,12 @@ export class ApiKeysService {
       | Prisma.ApiKeyUpdatescopesInput
   ) {
     if (!Array.isArray(scopes)) return [];
-    return scopes.filter(i =>
-      Object.keys(
-        Object.keys(groupOwnerScopes).map(i =>
-          i.replace('{groupId}', groupId.toString())
-        )
-      ).includes(i)
+    const allowedScopes = await this.getApiKeyScopesForTeam(teamId);
+    return (scopes as string[]).filter(i =>
+      Object.keys(allowedScopes).includes(i)
     );
   }
+
   private async cleanScopesForUser(
     userId: number,
     scopes:
@@ -409,6 +407,7 @@ export class ApiKeysService {
     if (!Array.isArray(scopes)) return [];
     if (!allowedScopes)
       allowedScopes = await this.getApiKeyScopesForUser(userId);
+
     return (scopes as string[]).filter(i =>
       Object.keys(allowedScopes).includes(i)
     );
@@ -438,12 +437,12 @@ export class ApiKeysService {
       });
   }
 
-  getApiKeyScopesForGroup(groupId: number): Record<string, string> {
+  getApiKeyScopesForTeam(teamId: number): Record<string, string> {
     const scopes: Record<string, string> = {};
-    Object.keys(groupOwnerScopes).forEach(
+    Object.keys(teamOwnerScopes).forEach(
       key =>
-        (scopes[key.replace('{groupId}', groupId.toString())] =
-          groupOwnerScopes[key])
+        (scopes[key.replace('{teamId}', teamId.toString())] =
+          teamOwnerScopes[key])
     );
     return scopes;
   }
@@ -460,18 +459,37 @@ export class ApiKeysService {
     if (user.role === 'SUDO') {
       scopes['*'] = 'Do everything (USE WITH CAUTION)';
       scopes['user-*:*'] = 'CRUD users';
-      scopes['group-*:*'] = 'CRUD groups';
+      scopes['team-*:*'] = 'CRUD teams';
     }
     Object.keys(userScopes).forEach(
       key =>
         (scopes[key.replace('{userId}', userId.toString())] = userScopes[key])
     );
-    // newbie applicationScopes
-    Object.keys(applicationScopes).forEach(
+    return scopes;
+  }
+
+  async getApiKeyScopesForTeamCustomized(
+    teamId: number
+  ): Promise<Record<string, string>> {
+    const scopes: Record<string, string> = {};
+    // applicationScopes
+    Object.keys(teamMemberScopesCustomized).forEach(
       key =>
-        (scopes[key.replace('{userId}', userId.toString())] =
-          applicationScopes[key])
+        (scopes[key.replace('{teamId}', teamId.toString())] =
+          teamMemberScopesCustomized[key])
     );
+    return scopes;
+  }
+
+  async getApiKeyScopesForUserCustomized(
+    userId: number
+  ): Promise<Record<string, string>> {
+    const scopes: Record<string, string> = {};
+    // applicationScopes
+    Object.keys(userScopesCustomized).forEach(key => {
+      scopes[key.replace('{userId}', userId.toString())] =
+        userScopesCustomized[key];
+    });
     return scopes;
   }
 }

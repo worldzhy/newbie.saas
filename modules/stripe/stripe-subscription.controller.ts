@@ -14,60 +14,60 @@ import {AuditLog} from '../audit-logs/audit-log.decorator';
 import {Scopes} from '../auth/scope.decorator';
 import {StripeService} from './stripe.service';
 
-@Controller('groups/:groupId/subscriptions')
+@Controller('teams/:teamId/subscriptions')
 export class StripeSubscriptionController {
   constructor(private stripeService: StripeService) {}
 
-  /** Create a subscription for a group */
+  /** Create a subscription for a team */
   @Post(':plan')
   @AuditLog('create-subscription')
-  @Scopes('group-{groupId}:write-subscription-*')
+  @Scopes('team-{teamId}:write-subscription-*')
   async create(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('plan') plan: string
   ): Promise<Stripe.Checkout.Session> {
-    return this.stripeService.createSession(groupId, 'subscription', plan);
+    return this.stripeService.createSession(teamId, 'subscription', plan);
   }
 
-  /** Get subscriptions for a group */
+  /** Get subscriptions for a team */
   @Get()
-  @Scopes('group-{groupId}:read-subscription-*')
+  @Scopes('team-{teamId}:read-subscription-*')
   async getAll(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Query('take', OptionalIntPipe) take?: number,
     @Query('cursor', CursorPipe) cursor?: {id: string}
   ): Promise<Stripe.Subscription[]> {
-    return this.stripeService.getSubscriptions(groupId, {take, cursor});
+    return this.stripeService.getSubscriptions(teamId, {take, cursor});
   }
 
-  /** Get a subscription for a group */
+  /** Get a subscription for a team */
   @Get(':id')
-  @Scopes('group-{groupId}:read-subscription-{id}')
+  @Scopes('team-{teamId}:read-subscription-{id}')
   async get(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id') id: string
   ): Promise<Stripe.Subscription> {
-    return this.stripeService.getSubscription(groupId, id);
+    return this.stripeService.getSubscription(teamId, id);
   }
 
-  /** Cancel a subscription for a group */
+  /** Cancel a subscription for a team */
   @Delete(':id')
   @AuditLog('delete-subscription')
-  @Scopes('group-{groupId}:delete-subscription-{id}')
+  @Scopes('team-{teamId}:delete-subscription-{id}')
   async remove(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id') id: string
   ): Promise<Stripe.Subscription> {
-    return this.stripeService.cancelSubscription(groupId, id);
+    return this.stripeService.cancelSubscription(teamId, id);
   }
 
-  /** Get subscription plans for a group */
+  /** Get subscription plans for a team */
   @Get('plans')
-  @Scopes('group-{groupId}:write-subscription-*')
+  @Scopes('team-{teamId}:write-subscription-*')
   async getPlans(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Query('product') product?: string
   ): Promise<Stripe.Plan[]> {
-    return this.stripeService.plans(groupId, product);
+    return this.stripeService.plans(teamId, product);
   }
 }

@@ -23,33 +23,33 @@ import {
 import {CreateDomainDto} from './domains.dto';
 import {DomainsService} from './domains.service';
 
-@Controller('groups/:groupId/domains')
+@Controller('teams/:teamId/domains')
 export class DomainController {
   constructor(private domainsService: DomainsService) {}
 
-  /** Create a new domain for a group */
+  /** Create a new domain for a team */
   @Post()
   @AuditLog('create-domain')
-  @Scopes('group-{groupId}:write-domain-*')
+  @Scopes('team-{teamId}:write-domain-*')
   async create(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Body() data: CreateDomainDto
   ): Promise<Expose<Domain>> {
-    return this.domainsService.createDomain(groupId, data);
+    return this.domainsService.createDomain(teamId, data);
   }
 
-  /** Get domains for a group */
+  /** Get domains for a team */
   @Get()
-  @Scopes('group-{groupId}:read-domain-*')
+  @Scopes('team-{teamId}:read-domain-*')
   async getAll(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Query('skip', OptionalIntPipe) skip?: number,
     @Query('take', OptionalIntPipe) take?: number,
     @Query('cursor', CursorPipe) cursor?: Prisma.DomainWhereUniqueInput,
     @Query('where', WherePipe) where?: Record<string, number | string>,
     @Query('orderBy', OrderByPipe) orderBy?: Record<string, 'asc' | 'desc'>
   ): Promise<Expose<Domain>[]> {
-    return this.domainsService.getDomains(groupId, {
+    return this.domainsService.getDomains(teamId, {
       skip,
       take,
       orderBy,
@@ -58,37 +58,37 @@ export class DomainController {
     });
   }
 
-  /** Read a domain for a group */
+  /** Read a domain for a team */
   @Get(':id')
-  @Scopes('group-{groupId}:read-domain-{id}')
+  @Scopes('team-{teamId}:read-domain-{id}')
   async get(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id', ParseIntPipe) id: number
   ): Promise<Expose<Domain>> {
-    return this.domainsService.getDomain(groupId, id);
+    return this.domainsService.getDomain(teamId, id);
   }
 
-  /** Delete a domain for a group */
+  /** Delete a domain for a team */
   @Delete(':id')
   @AuditLog('delete-domain')
-  @Scopes('group-{groupId}:delete-domain-{id}')
+  @Scopes('team-{teamId}:delete-domain-{id}')
   async remove(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id', ParseIntPipe) id: number
   ): Promise<Expose<Domain>> {
-    return this.domainsService.deleteDomain(groupId, id);
+    return this.domainsService.deleteDomain(teamId, id);
   }
 
   /** Verify a domain using TXT record */
   @Post(':id/verify/txt')
   @AuditLog('verify-domain-txt')
-  @Scopes('group-{groupId}:write-domain-{id}')
+  @Scopes('team-{teamId}:write-domain-{id}')
   async verifyTxt(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id', ParseIntPipe) id: number
   ): Promise<Expose<Domain>> {
     return this.domainsService.verifyDomain(
-      groupId,
+      teamId,
       id,
       DOMAIN_VERIFICATION_TXT
     );
@@ -97,13 +97,13 @@ export class DomainController {
   /** Verify a domain using HTML file upload */
   @Post(':id/verify/html')
   @AuditLog('verify-domain-html')
-  @Scopes('group-{groupId}:write-domain-{id}')
+  @Scopes('team-{teamId}:write-domain-{id}')
   async verifyHtml(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id', ParseIntPipe) id: number
   ): Promise<Expose<Domain>> {
     return this.domainsService.verifyDomain(
-      groupId,
+      teamId,
       id,
       DOMAIN_VERIFICATION_HTML
     );

@@ -12,7 +12,7 @@ import {AuditLogsService} from './audit-logs.service';
 export class AuditLogController {
   constructor(private auditLogsService: AuditLogsService) {}
 
-  /** Get audit logs for a group */
+  /** Get audit logs for a team */
   @Get()
   @Scopes('audit-log-*:read-info')
   async getAll(

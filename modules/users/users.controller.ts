@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  UnauthorizedException,
   Body,
   Controller,
   Delete,
@@ -13,37 +14,45 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiResponse} from '@nestjs/swagger';
+import {ApiTags} from '@nestjs/swagger';
 import {FilesInterceptor} from '@nestjs/platform-express';
 import {Prisma, User} from '@prisma/client';
+import {PrismaService} from '@framework/prisma/prisma.service';
 import {Files} from '../../helpers/interfaces';
-import {CursorPipe} from '@framework/pipes/cursor.pipe';
-import {OptionalIntPipe} from '@framework/pipes/optional-int.pipe';
-import {OrderByPipe} from '@framework/pipes/order-by.pipe';
-import {WherePipe} from '@framework/pipes/where.pipe';
+import {expose} from '../../helpers/expose';
 import {Expose} from '../../helpers/interfaces';
 import {UserRequest} from '../auth/auth.interface';
 import {RateLimit} from '../auth/rate-limit.decorator';
 import {Scopes} from '../auth/scope.decorator';
-import {UpdateUserDto} from './users.dto';
+import {UpdateUserDto, UsersListReqDto, UsersListResDto} from './users.dto';
 import {UsersService} from './users.service';
+import {AccessTokenType} from '../auth/auth.interface';
+import {INVALID_TOKEN} from '../../errors/errors.constants';
 
 @ApiTags('Users')
 @Controller('users')
 export class UserController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private prisma: PrismaService
+  ) {}
 
   /** Get users */
   @Get()
   @Scopes('user-*:read-info')
-  async getAll(
-    @Query('skip', OptionalIntPipe) skip?: number,
-    @Query('take', OptionalIntPipe) take?: number,
-    @Query('cursor', CursorPipe) cursor?: Prisma.UserWhereUniqueInput,
-    @Query('where', WherePipe) where?: Record<string, number | string>,
-    @Query('orderBy', OrderByPipe) orderBy?: Record<string, 'asc' | 'desc'>
-  ): Promise<Expose<User>[]> {
-    return this.usersService.getUsers({skip, take, orderBy, cursor, where});
+  async getAll(@Query() query: UsersListReqDto): Promise<UsersListResDto> {
+    const {page, pageSize} = query;
+    const result = await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.User,
+      pagination: {page, pageSize},
+      findManyArgs: {
+        orderBy: {id: 'desc'},
+        include: {emails: true},
+      },
+    });
+
+    result.records = result.records.map(user => expose<User>(user));
+    return result;
   }
 
   /** Get a user */
@@ -51,6 +60,18 @@ export class UserController {
   @Scopes('user-{userId}:read-info')
   async get(@Param('userId', ParseIntPipe) id: number): Promise<Expose<User>> {
     return this.usersService.getUser(id);
+  }
+
+  /** Get login user */
+  @Get('/info/me')
+  async getMe(@Req() req: UserRequest): Promise<Expose<User>> {
+    const {userId} = req.user;
+    try {
+      const res = await this.usersService.getUser(userId as number);
+      return res;
+    } catch (e) {
+      throw new UnauthorizedException(INVALID_TOKEN);
+    }
   }
 
   /** Update a user */
@@ -73,7 +94,7 @@ export class UserController {
   ): Promise<Expose<User>> {
     return this.usersService.deactivateUser(
       id,
-      request.user.type === 'user' ? request.user.id : undefined
+      request.user.type === AccessTokenType.user ? request.user.id : undefined
     );
   }
 

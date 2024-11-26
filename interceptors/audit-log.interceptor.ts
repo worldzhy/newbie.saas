@@ -39,7 +39,7 @@ export class AuditLogger implements NestInterceptor {
           if (auditLog) {
             if (typeof auditLog === 'string') auditLog = [auditLog];
             const request = context.switchToHttp().getRequest() as UserRequest;
-            const groupId = parseInt(request.params.groupId);
+            const teamId = parseInt(request.params.teamId);
             const ip = getClientIp(request);
             const location = await this.geolocationService.getLocation(ip);
             const userAgent = request.get('user-agent');
@@ -48,8 +48,7 @@ export class AuditLogger implements NestInterceptor {
               let event = rawEvent;
               if (request.user.id && request.user.type === 'user')
                 event = event.replace('{userId}', request.user.id.toString());
-              if (groupId)
-                event = event.replace('{groupId}', groupId.toString());
+              if (teamId) event = event.replace('{teamId}', teamId.toString());
               const data: Prisma.AuditLogCreateInput = {
                 event,
                 rawEvent,
@@ -71,9 +70,9 @@ export class AuditLogger implements NestInterceptor {
                 data.user = {connect: {id: request.user.id}};
               if (request.user.id && request.user.type === 'api-key')
                 data.apiKey = {connect: {id: request.user.id}};
-              if (groupId) data.group = {connect: {id: groupId}};
+              if (teamId) data.team = {connect: {id: teamId}};
               await this.prisma.auditLog.create({data});
-              if (groupId) this.webhooksService.triggerWebhook(groupId, event);
+              if (teamId) this.webhooksService.triggerWebhook(teamId, event);
             }
           }
         })()

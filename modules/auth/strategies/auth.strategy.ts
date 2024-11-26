@@ -7,7 +7,11 @@ import {getClientIp} from 'request-ip';
 import {ApiKeysService} from '../../api-keys/api-keys.service';
 import {LOGIN_ACCESS_TOKEN} from '../../../providers/tokens/tokens.constants';
 import {TokensService} from '../../../providers/tokens/tokens.service';
-import {AccessTokenClaims, AccessTokenParsed} from '../auth.interface';
+import {
+  AccessTokenClaims,
+  AccessTokenParsed,
+  AccessTokenType,
+} from '../auth.interface';
 const Strategy = require('passport-strategy');
 
 class SaaSStarterStrategyName extends Strategy {
@@ -73,9 +77,10 @@ export class SaaSStarterStrategy extends PassportStrategy(
               return this.fail('IP address restrictions not met', 401);
           }
           return this.safeSuccess({
-            type: 'api-key',
+            type: AccessTokenType.apiKey,
             id: apiKeyDetails.id,
             userId: apiKeyDetails.userId as number,
+            teamId: apiKeyDetails.teamId as number,
             scopes: apiKeyDetails.scopes as string[],
           });
         } catch (error) {}
@@ -94,7 +99,7 @@ export class SaaSStarterStrategy extends PassportStrategy(
       ) as AccessTokenClaims;
       const {id, scopes, sessionId, role} = payload;
       return this.safeSuccess({
-        type: 'user',
+        type: AccessTokenType.user,
         id,
         userId: id,
         scopes,

@@ -29,16 +29,16 @@ export class WebhooksService {
   ) {}
 
   async createWebhook(
-    groupId: number,
-    data: Omit<Omit<Prisma.WebhookCreateInput, 'webhook'>, 'group'>
+    teamId: number,
+    data: Omit<Omit<Prisma.WebhookCreateInput, 'webhook'>, 'team'>
   ): Promise<Webhook> {
     return this.prisma.webhook.create({
-      data: {...data, group: {connect: {id: groupId}}},
+      data: {...data, team: {connect: {id: teamId}}},
     });
   }
 
   async getWebhooks(
-    groupId: number,
+    teamId: number,
     params: {
       skip?: number;
       take?: number;
@@ -53,27 +53,27 @@ export class WebhooksService {
         skip,
         take,
         cursor,
-        where: {...where, group: {id: groupId}},
+        where: {...where, team: {id: teamId}},
         orderBy,
       });
-      return webhooks.map(group => expose<Webhook>(group));
+      return webhooks.map(team => expose<Webhook>(team));
     } catch (error) {
       return [];
     }
   }
 
-  async getWebhook(groupId: number, id: number): Promise<Expose<Webhook>> {
+  async getWebhook(teamId: number, id: number): Promise<Expose<Webhook>> {
     const webhook = await this.prisma.webhook.findUnique({
       where: {id},
     });
     if (!webhook) throw new NotFoundException(WEBHOOK_NOT_FOUND);
-    if (webhook.groupId !== groupId)
+    if (webhook.teamId !== teamId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
     return expose<Webhook>(webhook);
   }
 
   async updateWebhook(
-    groupId: number,
+    teamId: number,
     id: number,
     data: Prisma.WebhookUpdateInput
   ): Promise<Expose<Webhook>> {
@@ -81,7 +81,7 @@ export class WebhooksService {
       where: {id},
     });
     if (!testWebhook) throw new NotFoundException(WEBHOOK_NOT_FOUND);
-    if (testWebhook.groupId !== groupId)
+    if (testWebhook.teamId !== teamId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
     const webhook = await this.prisma.webhook.update({
       where: {id},
@@ -91,7 +91,7 @@ export class WebhooksService {
   }
 
   async replaceWebhook(
-    groupId: number,
+    teamId: number,
     id: number,
     data: Prisma.WebhookCreateInput
   ): Promise<Expose<Webhook>> {
@@ -99,7 +99,7 @@ export class WebhooksService {
       where: {id},
     });
     if (!testWebhook) throw new NotFoundException(WEBHOOK_NOT_FOUND);
-    if (testWebhook.groupId !== groupId)
+    if (testWebhook.teamId !== teamId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
     const webhook = await this.prisma.webhook.update({
       where: {id},
@@ -108,12 +108,12 @@ export class WebhooksService {
     return expose<Webhook>(webhook);
   }
 
-  async deleteWebhook(groupId: number, id: number): Promise<Expose<Webhook>> {
+  async deleteWebhook(teamId: number, id: number): Promise<Expose<Webhook>> {
     const testWebhook = await this.prisma.webhook.findUnique({
       where: {id},
     });
     if (!testWebhook) throw new NotFoundException(WEBHOOK_NOT_FOUND);
-    if (testWebhook.groupId !== groupId)
+    if (testWebhook.teamId !== teamId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
     const webhook = await this.prisma.webhook.delete({
       where: {id},
@@ -131,7 +131,7 @@ export class WebhooksService {
       'verify-domain-txt': 'Verify domain (TXT)',
       'verify-domain-html': 'Verify domain (HTML)',
       'update-info': 'Update info',
-      delete: 'Delete group',
+      delete: 'Delete team',
       'add-membership': 'Add membership',
       'update-membership': 'Update membership',
       'delete-membership': 'Delete membership',
@@ -149,10 +149,10 @@ export class WebhooksService {
     return scopes;
   }
 
-  triggerWebhook(groupId: number, event: string) {
+  triggerWebhook(teamId: number, event: string) {
     this.prisma.webhook
       .findMany({
-        where: {group: {id: groupId}, isActive: true, event},
+        where: {team: {id: teamId}, isActive: true, event},
       })
       .then(webhooks => {
         webhooks.forEach(webhook =>

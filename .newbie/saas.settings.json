@@ -157,6 +157,7 @@
     "ip-range-check": "latest",
     "ip-anonymize": "latest",
     "jsonwebtoken": "^9.0.2",
+    "lru-cache": "^11.0.2",
     "maxmind": "latest",
     "normalize-email": "latest",
     "otplib": "latest",

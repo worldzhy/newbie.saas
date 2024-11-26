@@ -9,7 +9,7 @@ export const userScopes = {
   'user-{userId}:write-email-*': 'Create and update emails',
   'user-{userId}:read-email-*': 'Read emails',
   'user-{userId}:delete-email-*': 'Delete emails',
-  'user-{userId}:write-membership-*': 'Create groups',
+  'user-{userId}:write-membership-*': 'Create teams',
   'user-{userId}:read-membership-*': 'Read memberships',
   'user-{userId}:delete-membership-*': 'Delete memberships',
   'user-{userId}:delete-mfa-*': 'Disable MFA',
@@ -23,91 +23,96 @@ export const userScopes = {
   'user-{userId}:write-info': 'Update user details',
   'user-{userId}:deactivate': 'Delete user account',
   'user-{userId}:merge': 'Merge two users',
+  'user-{userId}:read-audit-log-*': 'Read audit log',
 };
 
-/** Scopes for a group owner */
-export const groupOwnerScopes = {
-  'group-{groupId}:write-api-key-*': 'Create and update API keys',
-  'group-{groupId}:read-api-key-*': 'Read API keys',
-  'group-{groupId}:delete-api-key-*': 'Delete API keys',
-  'group-{groupId}:read-api-key-logs-*': 'Read API key logs',
-  'group-{groupId}:read-audit-log-*': 'Read audit log',
-  'group-{groupId}:write-domain-*': 'Create and update domains',
-  'group-{groupId}:read-domain-*': 'Read domains',
-  'group-{groupId}:delete-domain-*': 'Delete domains',
-  'group-{groupId}:read-info': 'Read apartment details',
-  'group-{groupId}:write-info': 'Update apartment details',
-  'group-{groupId}:delete': 'Delete apartment',
-  'group-{groupId}:write-membership-*': 'Create and update memberships',
-  'group-{groupId}:read-membership-*': 'Read memberships',
-  'group-{groupId}:delete-membership-*': 'Delete memberships',
-  'group-{groupId}:write-billing': 'Create and update billing details',
-  'group-{groupId}:read-billing': 'Read billing details',
-  'group-{groupId}:delete-billing': 'Delete billing details',
-  'group-{groupId}:read-invoice-*': 'Read invoices',
-  'group-{groupId}:write-source-*': 'Create and update payment methods',
-  'group-{groupId}:read-source-*': 'Read payment methods',
-  'group-{groupId}:delete-source-*': 'Delete payment methods',
-  'group-{groupId}:write-subscription-*': 'Create and update subscriptions',
-  'group-{groupId}:read-subscription-*': 'Read subscriptions',
-  'group-{groupId}:delete-subscription-*': 'Delete subscriptions',
-  'group-{groupId}:write-webhook-*': 'Create and update webhooks',
-  'group-{groupId}:read-webhook-*': 'Read webhooks',
-  'group-{groupId}:delete-webhook-*': 'Delete webhooks',
+/** Scopes for a team owner */
+export const teamOwnerScopes = {
+  'team-{teamId}:write-api-key-*': 'Create and update API keys',
+  'team-{teamId}:read-api-key-*': 'Read API keys',
+  'team-{teamId}:delete-api-key-*': 'Delete API keys',
+  'team-{teamId}:read-api-key-logs-*': 'Read API key logs',
+  'team-{teamId}:read-audit-log-*': 'Read audit log',
+  'team-{teamId}:write-domain-*': 'Create and update domains',
+  'team-{teamId}:read-domain-*': 'Read domains',
+  'team-{teamId}:delete-domain-*': 'Delete domains',
+  'team-{teamId}:read-info': 'Read apartment details',
+  'team-{teamId}:write-info': 'Update apartment details',
+  'team-{teamId}:delete': 'Delete apartment',
+  'team-{teamId}:write-membership-*': 'Create and update memberships',
+  'team-{teamId}:read-membership-*': 'Read memberships',
+  'team-{teamId}:delete-membership-*': 'Delete memberships',
+  'team-{teamId}:write-billing': 'Create and update billing details',
+  'team-{teamId}:read-billing': 'Read billing details',
+  'team-{teamId}:delete-billing': 'Delete billing details',
+  'team-{teamId}:read-invoice-*': 'Read invoices',
+  'team-{teamId}:write-source-*': 'Create and update payment methods',
+  'team-{teamId}:read-source-*': 'Read payment methods',
+  'team-{teamId}:delete-source-*': 'Delete payment methods',
+  'team-{teamId}:write-subscription-*': 'Create and update subscriptions',
+  'team-{teamId}:read-subscription-*': 'Read subscriptions',
+  'team-{teamId}:delete-subscription-*': 'Delete subscriptions',
+  'team-{teamId}:write-webhook-*': 'Create and update webhooks',
+  'team-{teamId}:read-webhook-*': 'Read webhooks',
+  'team-{teamId}:delete-webhook-*': 'Delete webhooks',
 };
 
 /**
- * Scopes for a group admin
- * Admins can do everything except deleting the group or removing members
+ * Scopes for a team admin
+ * Admins can do everything except deleting the team or removing members
  */
-export const groupAdminScopes = {
-  'group-{groupId}:write-api-key-*': 'Create and update API keys',
-  'group-{groupId}:read-api-key-*': 'Read API keys',
-  'group-{groupId}:delete-api-key-*': 'Delete API keys',
-  'group-{groupId}:read-api-key-logs-*': 'Read API key logs',
-  'group-{groupId}:read-audit-log-*': 'Read audit log',
-  'group-{groupId}:write-domain-*': 'Create and update domains',
-  'group-{groupId}:read-domain-*': 'Read domains',
-  'group-{groupId}:delete-domain-*': 'Delete domains',
-  'group-{groupId}:read-info': 'Read apartment details',
-  'group-{groupId}:write-info': 'Update apartment details',
-  'group-{groupId}:write-membership-*': 'Create and update memberships',
-  'group-{groupId}:read-membership-*': 'Read memberships',
-  'group-{groupId}:write-billing': 'Create and update billing details',
-  'group-{groupId}:read-billing': 'Read billing details',
-  'group-{groupId}:delete-billing': 'Delete billing details',
-  'group-{groupId}:read-invoice-*': 'Read invoices',
-  'group-{groupId}:write-source-*': 'Create and update payment methods',
-  'group-{groupId}:read-source-*': 'Read payment methods',
-  'group-{groupId}:delete-source-*': 'Delete payment methods',
-  'group-{groupId}:write-subscription-*': 'Create and update subscriptions',
-  'group-{groupId}:read-subscription-*': 'Read subscriptions',
-  'group-{groupId}:delete-subscription-*': 'Delete subscriptions',
-  'group-{groupId}:write-webhook-*': 'Create and update webhooks',
-  'group-{groupId}:read-webhook-*': 'Read webhooks',
-  'group-{groupId}:delete-webhook-*': 'Delete webhooks',
+export const teamAdminScopes = {
+  'team-{teamId}:write-api-key-*': 'Create and update API keys',
+  'team-{teamId}:read-api-key-*': 'Read API keys',
+  'team-{teamId}:delete-api-key-*': 'Delete API keys',
+  'team-{teamId}:read-api-key-logs-*': 'Read API key logs',
+  'team-{teamId}:read-audit-log-*': 'Read audit log',
+  'team-{teamId}:write-domain-*': 'Create and update domains',
+  'team-{teamId}:read-domain-*': 'Read domains',
+  'team-{teamId}:delete-domain-*': 'Delete domains',
+  'team-{teamId}:read-info': 'Read apartment details',
+  'team-{teamId}:write-info': 'Update apartment details',
+  'team-{teamId}:write-membership-*': 'Create and update memberships',
+  'team-{teamId}:read-membership-*': 'Read memberships',
+  'team-{teamId}:write-billing': 'Create and update billing details',
+  'team-{teamId}:read-billing': 'Read billing details',
+  'team-{teamId}:delete-billing': 'Delete billing details',
+  'team-{teamId}:read-invoice-*': 'Read invoices',
+  'team-{teamId}:write-source-*': 'Create and update payment methods',
+  'team-{teamId}:read-source-*': 'Read payment methods',
+  'team-{teamId}:delete-source-*': 'Delete payment methods',
+  'team-{teamId}:write-subscription-*': 'Create and update subscriptions',
+  'team-{teamId}:read-subscription-*': 'Read subscriptions',
+  'team-{teamId}:delete-subscription-*': 'Delete subscriptions',
+  'team-{teamId}:write-webhook-*': 'Create and update webhooks',
+  'team-{teamId}:read-webhook-*': 'Read webhooks',
+  'team-{teamId}:delete-webhook-*': 'Delete webhooks',
 };
 
 /**
- * Scopes for a group member
+ * Scopes for a team member
  * Members have readonly access
  */
-export const groupMemberScopes = {
-  'group-{groupId}:read-api-key-*': 'Read API keys',
-  'group-{groupId}:read-api-key-logs-*': 'Read API key logs',
-  'group-{groupId}:read-audit-log-*': 'Read audit log',
-  'group-{groupId}:read-domain-*': 'Read domains',
-  'group-{groupId}:read-info': 'Read apartment details',
-  'group-{groupId}:read-membership-*': 'Read memberships',
-  'group-{groupId}:read-billing': 'Read billing details',
-  'group-{groupId}:read-invoice-*': 'Read invoices',
-  'group-{groupId}:read-source-*': 'Read payment methods',
-  'group-{groupId}:read-subscription-*': 'Read subscriptions',
-  'group-{groupId}:read-webhook-*': 'Read webhooks',
+export const teamMemberScopes = {
+  'team-{teamId}:read-api-key-*': 'Read API keys',
+  'team-{teamId}:read-api-key-logs-*': 'Read API key logs',
+  'team-{teamId}:read-audit-log-*': 'Read audit log',
+  'team-{teamId}:read-domain-*': 'Read domains',
+  'team-{teamId}:read-info': 'Read apartment details',
+  'team-{teamId}:read-membership-*': 'Read memberships',
+  'team-{teamId}:read-billing': 'Read billing details',
+  'team-{teamId}:read-invoice-*': 'Read invoices',
+  'team-{teamId}:read-source-*': 'Read payment methods',
+  'team-{teamId}:read-subscription-*': 'Read subscriptions',
+  'team-{teamId}:read-webhook-*': 'Read webhooks',
 };
 
-
-/** Scopes for a application */
-export const applicationScopes = {
+/** Customized scopes for a user */
+export const userScopesCustomized = {
   'application-{userId}:message-bot-api-key-*': 'Message Bot',
+};
+
+/** Customized scopes for a team member */
+export const teamMemberScopesCustomized = {
+  'application-{teamId}:message-bot-api-key-*': 'Message Bot',
 };

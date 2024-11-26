@@ -25,33 +25,33 @@ import {
 } from './webhooks.dto';
 import {WebhooksService} from './webhooks.service';
 
-@Controller('groups/:groupId/webhooks')
+@Controller('teams/:teamId/webhooks')
 export class WebhookController {
   constructor(private webhooksService: WebhooksService) {}
 
-  /** Create a webhook for a group */
+  /** Create a webhook for a team */
   @Post()
   @AuditLog('create-webhook')
-  @Scopes('group-{groupId}:write-webhook-*')
+  @Scopes('team-{teamId}:write-webhook-*')
   async create(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Body() data: CreateWebhookDto
   ): Promise<Expose<Webhook>> {
-    return this.webhooksService.createWebhook(groupId, data);
+    return this.webhooksService.createWebhook(teamId, data);
   }
 
-  /** Get webhooks for a group */
+  /** Get webhooks for a team */
   @Get()
-  @Scopes('group-{groupId}:read-webhook-*')
+  @Scopes('team-{teamId}:read-webhook-*')
   async getAll(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Query('skip', OptionalIntPipe) skip?: number,
     @Query('take', OptionalIntPipe) take?: number,
     @Query('cursor', CursorPipe) cursor?: Prisma.WebhookWhereUniqueInput,
     @Query('where', WherePipe) where?: Record<string, number | string>,
     @Query('orderBy', OrderByPipe) orderBy?: Record<string, 'asc' | 'desc'>
   ): Promise<Expose<Webhook>[]> {
-    return this.webhooksService.getWebhooks(groupId, {
+    return this.webhooksService.getWebhooks(teamId, {
       skip,
       take,
       orderBy,
@@ -60,55 +60,55 @@ export class WebhookController {
     });
   }
 
-  /** Get webhook scopes for a group */
+  /** Get webhook scopes for a team */
   @Get('scopes')
-  @Scopes('group-{groupId}:write-webhook-*')
+  @Scopes('team-{teamId}:write-webhook-*')
   async scopes(): Promise<Record<string, string>> {
     return this.webhooksService.getWebhookScopes();
   }
 
-  /** Get a webhook for a group */
+  /** Get a webhook for a team */
   @Get(':id')
-  @Scopes('group-{groupId}:read-webhook-{id}')
+  @Scopes('team-{teamId}:read-webhook-{id}')
   async get(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id', ParseIntPipe) id: number
   ): Promise<Expose<Webhook>> {
-    return this.webhooksService.getWebhook(groupId, id);
+    return this.webhooksService.getWebhook(teamId, id);
   }
 
-  /** Update a webhook for a group */
+  /** Update a webhook for a team */
   @Patch(':id')
   @AuditLog('update-webhook')
-  @Scopes('group-{groupId}:write-webhook-{id}')
+  @Scopes('team-{teamId}:write-webhook-{id}')
   async update(
     @Body() data: UpdateWebhookDto,
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id', ParseIntPipe) id: number
   ): Promise<Expose<Webhook>> {
-    return this.webhooksService.updateWebhook(groupId, id, data);
+    return this.webhooksService.updateWebhook(teamId, id, data);
   }
 
-  /** Replace a webhook for a group */
+  /** Replace a webhook for a team */
   @Put(':id')
   @AuditLog('update-webhook')
-  @Scopes('group-{groupId}:write-webhook-{id}')
+  @Scopes('team-{teamId}:write-webhook-{id}')
   async replace(
     @Body() data: ReplaceWebhookDto,
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id', ParseIntPipe) id: number
   ): Promise<Expose<Webhook>> {
-    return this.webhooksService.updateWebhook(groupId, id, data);
+    return this.webhooksService.updateWebhook(teamId, id, data);
   }
 
-  /** Delete a webhook for a group */
+  /** Delete a webhook for a team */
   @Delete(':id')
   @AuditLog('delete-webhook')
-  @Scopes('group-{groupId}:delete-webhook-{id}')
+  @Scopes('team-{teamId}:delete-webhook-{id}')
   async remove(
-    @Param('groupId', ParseIntPipe) groupId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id', ParseIntPipe) id: number
   ): Promise<Expose<Webhook>> {
-    return this.webhooksService.deleteWebhook(groupId, id);
+    return this.webhooksService.deleteWebhook(teamId, id);
   }
 }

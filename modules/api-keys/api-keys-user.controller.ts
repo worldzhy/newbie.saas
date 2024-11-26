@@ -9,9 +9,9 @@ import {
   Post,
   Put,
   Query,
-  Req,
 } from '@nestjs/common';
-import {ApiTags, ApiBearerAuth, ApiResponse} from '@nestjs/swagger';
+import {ApiTags} from '@nestjs/swagger';
+import {AuditLog} from '../audit-logs/audit-log.decorator';
 import {ApiKey, Prisma} from '@prisma/client';
 import {CursorPipe} from '@framework/pipes/cursor.pipe';
 import {OptionalIntPipe} from '@framework/pipes/optional-int.pipe';
@@ -33,6 +33,7 @@ export class ApiKeyUserController {
 
   /** Create an API key for a user */
   @Post()
+  @AuditLog('create-api-key')
   @Scopes('user-{userId}:write-api-key-*')
   async create(
     @Param('userId', ParseIntPipe) userId: number,
@@ -67,7 +68,7 @@ export class ApiKeyUserController {
   async scopes(
     @Param('userId', ParseIntPipe) userId: number
   ): Promise<Record<string, string>> {
-    return this.apiKeysService.getApiKeyScopesForUser(userId);
+    return this.apiKeysService.getApiKeyScopesForUserCustomized(userId);
   }
 
   /** Get an API key */
@@ -82,6 +83,7 @@ export class ApiKeyUserController {
 
   /** Update an API key */
   @Patch(':id')
+  @AuditLog('update-api-key')
   @Scopes('user-{userId}:write-api-key-{id}')
   async update(
     @Body() data: UpdateApiKeyDto,
@@ -93,6 +95,7 @@ export class ApiKeyUserController {
 
   /** Replace an API key */
   @Put(':id')
+  @AuditLog('update-api-key')
   @Scopes('user-{userId}:write-api-key-{id}')
   async replace(
     @Body() data: ReplaceApiKeyDto,
@@ -104,6 +107,7 @@ export class ApiKeyUserController {
 
   /** Delete an API key */
   @Delete(':id')
+  @AuditLog('delete-api-key')
   @Scopes('user-{userId}:delete-api-key-{id}')
   async remove(
     @Param('userId', ParseIntPipe) userId: number,

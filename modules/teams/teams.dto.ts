@@ -6,8 +6,9 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
+import {ApiProperty} from '@nestjs/swagger';
 
-export class CreateGroupDto {
+export class CreateTeamDto {
   @IsBoolean()
   @IsOptional()
   autoJoinDomain?: boolean;
@@ -20,6 +21,9 @@ export class CreateGroupDto {
   @IsOptional()
   ipRestrictions?: string;
 
+  @ApiProperty({
+    type: String,
+  })
   @IsString()
   @IsNotEmpty()
   name!: string;
@@ -33,7 +37,7 @@ export class CreateGroupDto {
   profilePictureUrl?: string;
 }
 
-export class UpdateGroupDto {
+export class UpdateTeamDto {
   @IsBoolean()
   @IsOptional()
   autoJoinDomain?: boolean;
@@ -59,7 +63,7 @@ export class UpdateGroupDto {
   profilePictureUrl?: string;
 }
 
-export class ReplaceGroupDto {
+export class ReplaceTeamDto {
   @IsBoolean()
   @IsNotEmpty()
   autoJoinDomain!: boolean;

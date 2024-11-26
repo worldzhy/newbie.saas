@@ -1,24 +1,21 @@
-import {Controller, Get, ParseIntPipe, Query, Param} from '@nestjs/common';
+import {Controller, Get, Param, ParseIntPipe, Query} from '@nestjs/common';
+import {ApiTags} from '@nestjs/swagger';
 import {AuditLog, Prisma} from '@prisma/client';
 import {PrismaService} from '@framework/prisma/prisma.service';
-import {ApiTags, ApiResponse} from '@nestjs/swagger';
 import {expose} from '../../helpers/expose';
 import {Scopes} from '../auth/scope.decorator';
 import {AuditLogsListReqDto, AuditLogsListResDto} from './audit-logs.dto';
 
-@ApiTags('Users Audit Logs')
-@Controller('users/:userId/audit-logs')
-export class AuditLogUserController {
+@ApiTags('Teams Audit Logs')
+@Controller('teams/:teamId/audit-logs')
+export class AuditLogTeamController {
   constructor(private prisma: PrismaService) {}
 
-  /** Get audit logs for a user */
+  /** Get audit logs for a team */
   @Get()
-  @ApiResponse({
-    type: AuditLogsListResDto,
-  })
-  @Scopes('user-{userId}:read-audit-log-*')
+  @Scopes('team-{teamId}:read-audit-log-*')
   async getAll(
-    @Param('userId', ParseIntPipe) userId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Query() query: AuditLogsListReqDto
   ): Promise<AuditLogsListResDto> {
     const {page, pageSize} = query;
@@ -26,13 +23,13 @@ export class AuditLogUserController {
       model: Prisma.ModelName.AuditLog,
       pagination: {page, pageSize},
       findManyArgs: {
-        where: {userId},
+        where: {teamId},
         orderBy: {id: 'desc'},
         include: {team: true, user: true},
       },
     });
 
-    result.records = result.records.map(user => expose<AuditLog>(user));
+    result.records = result.records.map(item => expose<AuditLog>(item));
     return result;
   }
 }

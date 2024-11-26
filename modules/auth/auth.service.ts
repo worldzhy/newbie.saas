@@ -61,11 +61,11 @@ import {
   TotpTokenResponse,
 } from './auth.interface';
 import {
-  groupAdminScopes,
-  groupMemberScopes,
-  groupOwnerScopes,
+  teamAdminScopes,
+  teamMemberScopes,
+  teamOwnerScopes,
   userScopes,
-  applicationScopes,
+  userScopesCustomized,
 } from '../../helpers/scopes';
 import axios from 'axios';
 import {generateRandomString} from '@framework/utilities/random.util';
@@ -164,7 +164,8 @@ export class AuthService {
       where: {emails: {some: {emailSafe}}},
     });
     if (testUser) throw new ConflictException(EMAIL_USER_CONFLICT);
-    const ignorePwnedPassword = !!data.ignorePwnedPassword;
+    // const ignorePwnedPassword = !!data.ignorePwnedPassword;
+    const ignorePwnedPassword = true;
     delete data.ignorePwnedPassword;
 
     if (data.name)
@@ -182,11 +183,11 @@ export class AuthService {
         data.password,
         ignorePwnedPassword
       );
-    let initials = data.name.trim().substr(0, 2).toUpperCase();
+    let initials = data.name.trim().substring(0, 2).toUpperCase();
     if (data.name.includes(' '))
       initials = data.name
         .split(' ')
-        .map(i => i.trim().substr(0, 1))
+        .map(i => i.trim().substring(0, 1))
         .join('')
         .toUpperCase();
     data.profilePictureUrl =
@@ -580,7 +581,7 @@ export class AuthService {
       data: {isVerified: true},
       include: {user: true},
     });
-    const groupsToJoin = await this.prisma.group.findMany({
+    const teamsToJoin = await this.prisma.team.findMany({
       where: {
         autoJoinDomain: true,
         domains: {
@@ -589,11 +590,11 @@ export class AuthService {
       },
       select: {id: true, name: true},
     });
-    for await (const group of groupsToJoin) {
+    for await (const team of teamsToJoin) {
       await this.prisma.membership.create({
         data: {
           user: {connect: {id: result.user.id}},
-          group: {connect: {id: group.id}},
+          team: {connect: {id: team.id}},
           role: 'MEMBER',
         },
       });
@@ -602,11 +603,11 @@ export class AuthService {
         template: {
           'teams/invitation': {
             userName: result.user.name,
-            teamName: group.name,
+            teamName: team.name,
             link: `${
               origin ??
               this.configService.get<string>('microservices.app.frontendUrl')
-            }/teams/${group.id}`,
+            }/teams/${team.id}`,
           },
         },
       });
@@ -704,15 +705,15 @@ export class AuthService {
   ): Promise<TokenResponse> {
     const token = await generateRandomString(64);
     const ua = UAParser(userAgent);
-    // const location = await this.geolocationService.getLocation(ipAddress);
+    const location = await this.geolocationService.getLocation(ipAddress);
     const {id} = await this.prisma.session.create({
       data: {
         token,
         ipAddress,
-        // city: location?.city?.names?.en,
-        // region: location?.subdivisions?.pop()?.names?.en,
-        // timezone: location?.location?.time_zone,
-        // countryCode: location?.country?.iso_code,
+        city: location?.city?.names?.en,
+        region: location?.subdivisions?.pop()?.names?.en,
+        timezone: location?.location?.time_zone,
+        countryCode: location?.country?.iso_code,
         userAgent,
         browser:
           `${ua.browser.name ?? ''} ${ua.browser.version ?? ''}`.trim() ||
@@ -879,61 +880,39 @@ export class AuthService {
     // Add all scopes for user self
     const scopes: string[] = Object.keys({
       ...userScopes,
-      ...applicationScopes, // add application scopes
+      ...userScopesCustomized,
     }).map(scope => scope.replace('{userId}', user.id.toString()));
 
-    // Add scopes for groups user is part of
+    // Add scopes for teams user is part of
     const memberships = await this.prisma.membership.findMany({
       where: {user: {id: user.id}},
-      select: {id: true, role: true, group: {select: {id: true}}},
+      select: {id: true, role: true, team: {select: {id: true}}},
     });
+
     for await (const membership of memberships) {
       scopes.push(`membership-${membership.id}:*`);
-      const ids = [
-        membership.group.id,
-        ...(await this.recursivelyGetSubgroupIds(membership.group.id)),
-      ];
-      ids.forEach(id => {
-        if (membership.role === 'OWNER')
-          scopes.push(
-            ...Object.keys(groupOwnerScopes).map(i =>
-              i.replace('{groupId}', id.toString())
-            )
-          );
-        if (membership.role === 'ADMIN')
-          scopes.push(
-            ...Object.keys(groupAdminScopes).map(i =>
-              i.replace('{groupId}', id.toString())
-            )
-          );
-        if (membership.role === 'MEMBER')
-          scopes.push(
-            ...Object.keys(groupMemberScopes).map(i =>
-              i.replace('{groupId}', id.toString())
-            )
-          );
-      });
+      const id = membership.team.id;
+
+      if (membership.role === 'OWNER')
+        scopes.push(
+          ...Object.keys(teamOwnerScopes).map(i =>
+            i.replace('{teamId}', id.toString())
+          )
+        );
+      if (membership.role === 'ADMIN')
+        scopes.push(
+          ...Object.keys(teamAdminScopes).map(i =>
+            i.replace('{teamId}', id.toString())
+          )
+        );
+      if (membership.role === 'MEMBER')
+        scopes.push(
+          ...Object.keys(teamMemberScopes).map(i =>
+            i.replace('{teamId}', id.toString())
+          )
+        );
     }
     return scopes;
-  }
-
-  private async recursivelyGetSubgroupIds(groupId: number) {
-    const subgroups = await this.prisma.group.findMany({
-      where: {parent: {id: groupId}},
-      select: {
-        id: true,
-        parent: {select: {id: true}},
-        subgroups: {select: {id: true}},
-      },
-    });
-    const ids = subgroups.map(i => i.id);
-    for await (const group of subgroups) {
-      for await (const subgroup of group.subgroups) {
-        const recurisiveIds = await this.recursivelyGetSubgroupIds(subgroup.id);
-        ids.push(...recurisiveIds);
-      }
-    }
-    return ids;
   }
 
   async mergeUsers(token: string): Promise<{success: true}> {

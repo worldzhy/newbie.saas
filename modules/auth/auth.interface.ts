@@ -22,12 +22,18 @@ export interface TotpTokenResponse {
   multiFactorRequired: true;
 }
 
+export enum AccessTokenType {
+  user = 'user',
+  apiKey = 'api-key',
+}
+
 export interface AccessTokenParsed {
   /** 'userId' or 'apiKeyId depends on the type */
   id: number;
-  userId: number;
+  userId?: number;
+  teamId?: number;
   scopes: string[];
-  type: 'user' | 'api-key';
+  type: AccessTokenType;
   sessionId?: number;
   role?: UserRole;
 }

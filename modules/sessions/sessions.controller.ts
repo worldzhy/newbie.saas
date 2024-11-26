@@ -7,43 +7,47 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
+import {ApiTags, ApiResponse} from '@nestjs/swagger';
 import {Prisma, Session} from '@prisma/client';
-import {CursorPipe} from '@framework/pipes/cursor.pipe';
-import {OptionalIntPipe} from '@framework/pipes/optional-int.pipe';
-import {OrderByPipe} from '@framework/pipes/order-by.pipe';
-import {WherePipe} from '@framework/pipes/where.pipe';
+import {PrismaService} from '@framework/prisma/prisma.service';
+import {expose} from '../../helpers/expose';
 import {Expose} from '../../helpers/interfaces';
 import {UserRequest} from '../auth/auth.interface';
 import {Scopes} from '../auth/scope.decorator';
 import {SessionsService} from './sessions.service';
+import {SessionsListResDto, SessionsListReqDto} from './sessions.dto';
 
+@ApiTags('Users Session')
 @Controller('users/:userId/sessions')
 export class SessionController {
-  constructor(private sessionsService: SessionsService) {}
+  constructor(
+    private prisma: PrismaService,
+    private sessionsService: SessionsService
+  ) {}
 
   /** Get sessions for a user */
   @Get()
+  @ApiResponse({type: SessionsListResDto})
   @Scopes('user-{userId}:read-session-*')
   async getAll(
     @Req() req: UserRequest,
     @Param('userId', ParseIntPipe) userId: number,
-    @Query('skip', OptionalIntPipe) skip?: number,
-    @Query('take', OptionalIntPipe) take?: number,
-    @Query('cursor', CursorPipe) cursor?: Prisma.SessionWhereUniqueInput,
-    @Query('where', WherePipe) where?: Record<string, number | string>,
-    @Query('orderBy', OrderByPipe) orderBy?: Record<string, 'asc' | 'desc'>
-  ): Promise<Expose<Session>[]> {
-    return this.sessionsService.getSessions(
-      userId,
-      {
-        skip,
-        take,
-        orderBy,
-        cursor,
-        where,
+    @Query() query: SessionsListReqDto
+  ): Promise<SessionsListResDto> {
+    const {sessionId} = req.user;
+    const {page, pageSize} = query;
+    const sessions = await this.prisma.findManyInManyPages({
+      model: Prisma.ModelName.Session,
+      pagination: {page, pageSize},
+      findManyArgs: {
+        where: {userId},
+        orderBy: {id: 'desc'},
       },
-      req.user?.sessionId
-    );
+    });
+    sessions.records = sessions.records
+      .map(user => expose<Session>(user))
+      .map(i => ({...i, isCurrentSession: sessionId === i.id}));
+    return sessions;
   }
 
   /** Get a session for a user */
@@ -51,19 +55,24 @@ export class SessionController {
   @Scopes('user-{userId}:read-session-{id}')
   async get(
     @Req() req: UserRequest,
-    @Param('userId', ParseIntPipe) userId: number,
     @Param('id', ParseIntPipe) id: number
   ): Promise<Expose<Session>> {
-    return this.sessionsService.getSession(userId, id, req.user?.sessionId);
+    const {userId} = req.user;
+    return this.sessionsService.getSession(
+      userId as number,
+      id,
+      req.user?.sessionId
+    );
   }
 
   /** Delete a session for a user */
   @Delete(':id')
   @Scopes('user-{userId}:delete-session-{id}')
   async remove(
-    @Param('userId', ParseIntPipe) userId: number,
+    @Req() req: UserRequest,
     @Param('id', ParseIntPipe) id: number
   ): Promise<Expose<Session>> {
-    return this.sessionsService.deleteSession(userId, id);
+    const {userId} = req.user;
+    return this.sessionsService.deleteSession(userId as number, id);
   }
 }

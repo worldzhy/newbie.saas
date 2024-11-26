@@ -20,7 +20,7 @@ import {expose} from '../../helpers/expose';
 import {PrismaService} from '@framework/prisma/prisma.service';
 import {ApiKeysService} from '../api-keys/api-keys.service';
 import {AuthService} from '../auth/auth.service';
-import {GroupsService} from '../groups/groups.service';
+import {TeamsService} from '../teams/teams.service';
 import {CreateMembershipInput} from './memberships.interface';
 import {generateRandomString} from '@framework/utilities/random.util';
 import {EmailService} from '@microservices/notification/email/email.service';
@@ -32,13 +32,13 @@ export class MembershipsService {
     private auth: AuthService,
     private email: EmailService,
     private configService: ConfigService,
-    private groupsService: GroupsService,
+    private teamsService: TeamsService,
     private apiKeyService: ApiKeysService
   ) {}
 
   async createUserMembership(
     userId: number,
-    data: Omit<Prisma.GroupCreateInput, 'id'>
+    data: Omit<Prisma.TeamCreateInput, 'id'>
   ) {
     let id: number | undefined = undefined;
     while (!id) {
@@ -46,7 +46,7 @@ export class MembershipsService {
       const users = await this.prisma.user.findMany({where: {id}, take: 1});
       if (users.length) id = undefined;
     }
-    const created = await this.groupsService.createGroup(userId, {
+    const created = await this.teamsService.createTeam(userId, {
       ...data,
       id,
     });
@@ -68,7 +68,7 @@ export class MembershipsService {
         cursor,
         where,
         orderBy,
-        include: {group: true, user: true},
+        include: {team: true, user: true},
       });
       return memberships.map(user => expose<Membership>(user));
     } catch (error) {
@@ -82,7 +82,7 @@ export class MembershipsService {
   ): Promise<Expose<Membership>> {
     const membership = await this.prisma.membership.findUnique({
       where: {id},
-      include: {group: true},
+      include: {team: true},
     });
     if (!membership) throw new NotFoundException(MEMBERSHIP_NOT_FOUND);
     if (membership.userId !== userId)
@@ -90,8 +90,8 @@ export class MembershipsService {
     return expose<Membership>(membership);
   }
 
-  async getGroupMembership(
-    groupId: number,
+  async getTeamMembership(
+    teamId: number,
     id: number
   ): Promise<Expose<Membership>> {
     const membership = await this.prisma.membership.findUnique({
@@ -99,7 +99,7 @@ export class MembershipsService {
       include: {user: true},
     });
     if (!membership) throw new NotFoundException(MEMBERSHIP_NOT_FOUND);
-    if (membership.groupId !== groupId)
+    if (membership.teamId !== teamId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
     return expose<Membership>(membership);
   }
@@ -114,7 +114,7 @@ export class MembershipsService {
     if (!testMembership) throw new NotFoundException(MEMBERSHIP_NOT_FOUND);
     if (testMembership.userId !== userId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
-    await this.verifyDeleteMembership(testMembership.groupId, id);
+    await this.verifyDeleteMembership(testMembership.teamId, id);
     const membership = await this.prisma.membership.delete({
       where: {id},
     });
@@ -122,8 +122,8 @@ export class MembershipsService {
     return expose<Membership>(membership);
   }
 
-  async updateGroupMembership(
-    groupId: number,
+  async updateTeamMembership(
+    teamId: number,
     id: number,
     data: Prisma.MembershipUpdateInput
   ): Promise<Expose<Membership>> {
@@ -131,12 +131,12 @@ export class MembershipsService {
       where: {id},
     });
     if (!testMembership) throw new NotFoundException(MEMBERSHIP_NOT_FOUND);
-    if (testMembership.groupId !== groupId)
+    if (testMembership.teamId !== teamId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
     if (testMembership.role === 'OWNER' && data.role !== 'OWNER') {
       const otherOwners = (
         await this.prisma.membership.findMany({
-          where: {group: {id: groupId}, role: 'OWNER'},
+          where: {team: {id: teamId}, role: 'OWNER'},
         })
       ).filter(i => i.id !== id);
       if (!otherOwners.length)
@@ -153,17 +153,17 @@ export class MembershipsService {
     return expose<Membership>(membership);
   }
 
-  async deleteGroupMembership(
-    groupId: number,
+  async deleteTeamMembership(
+    teamId: number,
     id: number
   ): Promise<Expose<Membership>> {
     const testMembership = await this.prisma.membership.findUnique({
       where: {id},
     });
     if (!testMembership) throw new NotFoundException(MEMBERSHIP_NOT_FOUND);
-    if (testMembership.groupId !== groupId)
+    if (testMembership.teamId !== teamId)
       throw new UnauthorizedException(UNAUTHORIZED_RESOURCE);
-    await this.verifyDeleteMembership(testMembership.groupId, id);
+    await this.verifyDeleteMembership(testMembership.teamId, id);
     const membership = await this.prisma.membership.delete({
       where: {id},
       include: {user: true},
@@ -174,9 +174,9 @@ export class MembershipsService {
     return expose<Membership>(membership);
   }
 
-  async createGroupMembership(
+  async createTeamMembership(
     ipAddress: string,
-    groupId: number,
+    teamId: number,
     data: CreateMembershipInput
   ) {
     const emailSafe = safeEmail(data.email);
@@ -191,33 +191,33 @@ export class MembershipsService {
     const result = await this.prisma.membership.create({
       data: {
         role: data.role,
-        group: {connect: {id: groupId}},
+        team: {connect: {id: teamId}},
         user: {connect: {id: user.id}},
       },
-      include: {group: {select: {name: true}}},
+      include: {team: {select: {name: true}}},
     });
     this.email.sendWithTemplate({
       toAddress: `"${user.name}" <${data.email}>`,
       template: {
         'teams/invitation': {
           userName: user.name,
-          teamName: result.group.name,
+          teamName: result.team.name,
           link: `${this.configService.get<string>(
             'microservices.app.frontendUrl'
-          )}/groups/${groupId}`,
+          )}/groups/${teamId}`,
         },
       },
     });
     return expose<Membership>(result);
   }
 
-  /** Verify whether a group membership can be deleted */
+  /** Verify whether a team membership can be deleted */
   private async verifyDeleteMembership(
-    groupId: number,
+    teamId: number,
     membershipId: number
   ): Promise<void> {
     const memberships = await this.prisma.membership.findMany({
-      where: {group: {id: groupId}},
+      where: {team: {id: teamId}},
     });
     if (memberships.length === 1)
       throw new BadRequestException(CANNOT_DELETE_SOLE_MEMBER);

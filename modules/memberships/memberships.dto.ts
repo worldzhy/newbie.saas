@@ -6,6 +6,29 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
+import {ApiProperty} from '@nestjs/swagger';
+import {Membership} from '@prisma/client';
+import {Expose} from '../../helpers/interfaces';
+import {expose} from '../../helpers/expose';
+import {
+  CommonPaginationReqDto,
+  CommonPaginationResDto,
+} from '@framework/common.dto';
+
+export class MembershipsListReqDto extends CommonPaginationReqDto {}
+
+export class MembershipsListResDto {
+  @ApiProperty({
+    type: expose<Membership>,
+    isArray: true,
+  })
+  records: Expose<Membership>[];
+
+  @ApiProperty({
+    type: CommonPaginationResDto,
+  })
+  pagination: CommonPaginationResDto;
+}
 
 export class UpdateMembershipDto {
   @IsString()
@@ -14,7 +37,7 @@ export class UpdateMembershipDto {
   role?: 'OWNER' | 'ADMIN' | 'MEMBER';
 }
 
-export class CreateGroupMembershipDto {
+export class CreateTeamMembershipDto {
   @IsEmail()
   @IsNotEmpty()
   email!: string;

@@ -2,19 +2,18 @@ import {Injectable, OnModuleDestroy} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import * as geolite2 from 'geolite2-redist';
 import maxmind, {CityResponse, Reader} from 'maxmind';
-import * as QuickLRU from 'quick-lru';
+import {LRUCache} from 'lru-cache';
 
 @Injectable()
 export class GeolocationService implements OnModuleDestroy {
   private reader: Reader<CityResponse> | null = null;
-  private lru: QuickLRU<string, Partial<CityResponse>>;
+  private lru: LRUCache<string, Partial<CityResponse>>;
 
   constructor(private configService: ConfigService) {
-    this.lru = new QuickLRU<string, Partial<CityResponse>>({
-      maxSize:
-        this.configService.get<number>(
-          'microservices.saas.cache.geolocationLruSize'
-        ) ?? 100,
+    this.lru = new LRUCache({
+      maxSize: this.configService.getOrThrow<number>(
+        'microservices.saas.cache.geolocationLruSize'
+      ),
     });
   }
 
