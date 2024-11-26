@@ -7,25 +7,22 @@ import {ConfigService} from '@nestjs/config';
 import type {Prisma, UserRole} from '@prisma/client';
 import {User} from '@prisma/client';
 import {compare} from 'bcrypt';
-import {extname} from 'path';
 import {
   CURRENT_PASSWORD_REQUIRED,
   FILE_TOO_LARGE,
   INVALID_CREDENTIALS,
   USER_NOT_FOUND,
 } from '../../errors/errors.constants';
-import {Files} from '../../helpers/interfaces';
 import {safeEmail} from '../../helpers/safe-email';
 import {Expose} from '../../helpers/interfaces';
 import {expose} from '../../helpers/expose';
 import {PrismaService} from '@framework/prisma/prisma.service';
-import {S3Service} from '../../providers/s3/s3.service';
 import {MERGE_ACCOUNTS_TOKEN} from '../../providers/tokens/tokens.constants';
 import {TokensService} from '../../providers/tokens/tokens.service';
 import {ApiKeysService} from '../api-keys/api-keys.service';
 import {AuthService} from '../auth/auth.service';
 import {PasswordUpdateInput} from './users.interface';
-import {generateUuid} from '@framework/utilities/random.util';
+import {AwsS3Service} from '@microservices/aws-s3/aws-s3.service';
 import {EmailService} from '@microservices/notification/email/email.service';
 
 @Injectable()
@@ -36,7 +33,7 @@ export class UsersService {
     private email: EmailService,
     private configService: ConfigService,
     private tokensService: TokensService,
-    private s3Service: S3Service,
+    private s3Service: AwsS3Service,
     private apiKeysService: ApiKeysService
   ) {}
 
@@ -193,33 +190,18 @@ export class UsersService {
 
   async uploadProfilePicture(
     id: number,
-    file: Files[0]
+    file: Express.Multer.File
   ): Promise<Expose<User>> {
     if (file.size > 25000000) throw new Error(FILE_TOO_LARGE);
 
-    const region = this.configService.getOrThrow<string>(
-      'microservices.saas.s3.region'
-    );
-    const bucket = this.configService.getOrThrow<string>(
-      'microservices.saas.s3.profilePictureBucket'
-    );
-    const cdnHostname = this.configService.getOrThrow<string>(
-      'microservices.saas.s3.profilePictureCdnHostname'
-    );
-
-    const {Location} = await this.s3Service.upload(
-      `picture-${id}-${generateUuid()}${extname(file.originalname)}`,
-      file.buffer,
-      bucket,
-      true
-    );
+    const {url, cdnUrl} = await this.s3Service.uploadFile({
+      file,
+      path: 'profile_picture',
+    });
     return this.prisma.user.update({
       where: {id},
       data: {
-        profilePictureUrl: Location.replace(
-          `${bucket}.s3.${region}.amazonaws.com`,
-          cdnHostname
-        ),
+        profilePictureUrl: cdnUrl ?? url,
       },
     });
   }

@@ -16,11 +16,11 @@ import {
   userScopesCustomized,
   teamMemberScopesCustomized,
 } from '../../helpers/scopes';
-import {ElasticsearchService} from '../../providers/elasticsearch/elasticsearch.service';
 import {Expose} from '../../helpers/interfaces';
 import {expose} from '../../helpers/expose';
 import {PrismaService} from '@framework/prisma/prisma.service';
 import {generateRandomString} from '@framework/utilities/random.util';
+import {ElasticsearchService} from '@microservices/elasticsearch/elasticsearch.service';
 import {LRUCache} from 'lru-cache';
 
 @Injectable()

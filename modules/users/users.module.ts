@@ -5,11 +5,10 @@ import {AuthModule} from '../auth/auth.module';
 import {TokensModule} from '../../providers/tokens/tokens.module';
 import {UserController} from './users.controller';
 import {UsersService} from './users.service';
-import {S3Module} from '../../providers/s3/s3.module';
 import {ApiKeysModule} from '../api-keys/api-keys.module';
 
 @Module({
-  imports: [AuthModule, ConfigModule, TokensModule, S3Module, ApiKeysModule],
+  imports: [AuthModule, ConfigModule, TokensModule, ApiKeysModule],
   controllers: [UserController],
   providers: [UsersService],
   exports: [UsersService],

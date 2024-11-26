@@ -14,16 +14,6 @@
       "domain": {
         "verificationFile": "process.env.DOMAIN_VERIFICATION_FILE || 'saas-verify.txt'"
       },
-      "elasticsearch": {
-        "node": "process.env.ELASTICSEARCH_NODE",
-        "retries": "int(process.env.ELASTICSEARCH_FAIL_RETRIES, 3)",
-        "auth": "process.env.ELASTICSEARCH_AUTH_USERNAME ? {username: process.env.ELASTICSEARCH_AUTH_USERNAME, password: process.env.ELASTICSEARCH_AUTH_PASSWORD,} : process.env.ELASTICSEARCH_AUTH_API_KEY ? process.env.ELASTICSEARCH_AUTH_API_KEY_ID ? {apiKey: {api_key: process.env.ELASTICSEARCH_AUTH_API_KEY,id: process.env.ELASTICSEARCH_AUTH_API_KEY_ID,},}: { apiKey: process.env.ELASTICSEARCH_AUTH_API_KEY }: undefined",
-        "aws": {
-          "accessKeyId": "process.env.ELASTICSEARCH_AWS_ACCESS_KEY_ID || ''",
-          "secretAccessKey": "process.env.ELASTICSEARCH_AWS_SECRET_ACCESS_KEY || ''",
-          "region": "process.env.ELASTICSEARCH_AWS_REGION || ''"
-        }
-      },
       "googleMaps": {
         "apiKey": "process.env.GOOGLE_MAPS_API_KEY"
       },
@@ -66,13 +56,6 @@
         "unusedRefreshTokenExpiryDays": "int(process.env.SECURITY_DELETE_EXPIRED_SESSIONS, 30)",
         "inactiveUserDeleteDays": "int(process.env.SECURITY_INACTIVE_USER_DELETE_DAYS, 30)"
       },
-      "s3": {
-        "accessKeyId": "process.env.AWS_S3_ACCESS_KEY || ''",
-        "secretAccessKey": "process.env.AWS_S3_SECRET_KEY || ''",
-        "region": "process.env.AWS_S3_REGION || ''",
-        "profilePictureBucket": "process.env.AWS_S3_PROFILE_PICTURE_BUCKET || ''",
-        "profilePictureCdnHostname": "process.env.AWS_S3_PROFILE_PICTURE_CDN_HOST_NAME || ''"
-      },
       "tracking": {
         "mode": "process.env.TRACKING_MODE || 'api-key'",
         "index": "process.env.TRACKING_INDEX || 'saas-logs'",
@@ -97,15 +80,6 @@
     "CACHE_GEOLOCATION_LRU_SIZE": "",
     "CACHE_APIKEY_LRU_SIZE": "",
     "DOMAIN_VERIFICATION_FILE": "",
-    "ELASTICSEARCH_NODE": "",
-    "ELASTICSEARCH_FAIL_RETRIES": "",
-    "ELASTICSEARCH_AUTH_USERNAME": "",
-    "ELASTICSEARCH_AUTH_PASSWORD": "",
-    "ELASTICSEARCH_AUTH_API_KEY": "",
-    "ELASTICSEARCH_AUTH_API_KEY_ID": "",
-    "ELASTICSEARCH_AWS_ACCESS_KEY_ID": "",
-    "ELASTICSEARCH_AWS_SECRET_ACCESS_KEY": "",
-    "ELASTICSEARCH_AWS_REGION": "",
     "GOOGLE_MAPS_API_KEY": "",
     "GOOGLE_AUTH_CLIENT_ID": "",
     "GOOGLE_AUTH_CLIENT_SECRET": "",
@@ -129,11 +103,6 @@
     "SECURITY_PASSWORD_PWNED_CHECK": "",
     "SECURITY_DELETE_EXPIRED_SESSIONS": "",
     "SECURITY_INACTIVE_USER_DELETE_DAYS": "",
-    "AWS_S3_ACCESS_KEY": "",
-    "AWS_S3_SECRET_KEY": "",
-    "AWS_S3_REGION": "",
-    "AWS_S3_PROFILE_PICTURE_BUCKET": "",
-    "AWS_S3_PROFILE_PICTURE_CDN_HO": "",
     "TRACKING_MODE": "",
     "TRACKING_INDEX": "",
     "TRACKING_DELETE_OLD_LOGS": "",
@@ -149,7 +118,6 @@
     "@nestjs/passport": "latest",
     "@nestjs/schedule": "^4.0.1",
     "aws-elasticsearch-connector": "latest",
-    "aws-sdk": "latest",
     "circularbuffer": "latest",
     "dot-object": "latest",
     "geolite2-redist": "^2.0.4",

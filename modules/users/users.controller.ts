@@ -18,7 +18,6 @@ import {ApiTags} from '@nestjs/swagger';
 import {FilesInterceptor} from '@nestjs/platform-express';
 import {Prisma, User} from '@prisma/client';
 import {PrismaService} from '@framework/prisma/prisma.service';
-import {Files} from '../../helpers/interfaces';
 import {expose} from '../../helpers/expose';
 import {Expose} from '../../helpers/interfaces';
 import {UserRequest} from '../auth/auth.interface';
@@ -104,7 +103,7 @@ export class UserController {
   @UseInterceptors(FilesInterceptor('files'))
   async profilePicture(
     @Param('userId', ParseIntPipe) id: number,
-    @UploadedFiles() files: Files
+    @UploadedFiles() files: Express.Multer.File[]
   ) {
     if (files.length && files[0])
       return this.usersService.uploadProfilePicture(id, files[0]);

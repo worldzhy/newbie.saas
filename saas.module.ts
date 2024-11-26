@@ -20,10 +20,8 @@ import {StripeModule} from './modules/stripe/stripe.module';
 import {UsersModule} from './modules/users/users.module';
 import {WebhooksModule} from './modules/webhooks/webhooks.module';
 import {DnsModule} from './providers/dns/dns.module';
-import {ElasticsearchModule} from './providers/elasticsearch/elasticsearch.module';
 import {GeolocationModule} from './providers/geolocation/geolocation.module';
 import {GoogleMapsModule} from './providers/google-maps/google-maps.module';
-import {S3Module} from './providers/s3/s3.module';
 import {TasksModule} from './providers/tasks/tasks.module';
 import {MetricsModule} from './modules/metrics/metrics.module';
 
@@ -46,8 +44,6 @@ import {MetricsModule} from './modules/metrics/metrics.module';
     StripeModule,
     AuditLogsModule,
     WebhooksModule,
-    ElasticsearchModule,
-    S3Module,
     GoogleMapsModule,
     MetricsModule,
   ],
